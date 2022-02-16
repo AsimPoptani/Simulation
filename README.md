@@ -30,7 +30,7 @@ You can run the simulation without running the GUI (so we can quickly test the c
 - [ ] Simulate the master boat?
 - [ ] Simulate communications between drones and the master boat
 - [ ] Create Github Project and put these todo in there
-- [ ] Add team members to the project
+- [x] Add team members to the project
 - [ ] Finalise architecture
 - [ ] Do we want to simulate failure to detect?
 - [ ] What is our success evaluation metric what are we trying to maximize or minimize? Is it time? Is it battery efficiency? 
