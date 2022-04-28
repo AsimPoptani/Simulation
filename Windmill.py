@@ -49,18 +49,39 @@ def set_text(string, coordx, coordy, fontSize): #Function to set text
 class WindmillSprite(pygame.sprite.Sprite):
     def __init__(self,windmill:Windmill):
         super(WindmillSprite,self).__init__()
-        # Define a small rect as the sprite
-        self.image = pygame.Surface([10,10], pygame.SRCALPHA)
-        pygame.draw.circle(self.image,(0,0,0),(5,5),5)
-        # self.rect = self.image.get_rect()
+        #List of images for animation
+        self.play = True
+        self.sprites = []
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine1.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine2.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine3.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine4.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine5.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine6.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine7.png'))
+        self.sprites.append(pygame.image.load('./sprites/wind-turbine8.png'))
+        self.vis_sprite = 0
+        self.image = self.sprites[self.vis_sprite]
+        self.rect = self.image.get_rect()
         self.windmill=windmill
     
     def getSprite(self):
         if len(self.windmill.faults)>0:
-            pygame.draw.circle(self.image,(255,0,0),(5,5),5)
+            self.image = pygame.image.load('./sprites/wind-turbine-fault.png')
+            #pygame.draw.circle(self.image,(255,0,0),(1,1),5)
+            self.play = False
         else:
-            pygame.draw.circle(self.image,(0,0,0),(5,5),5)
+            self.image = self.sprites[int(self.vis_sprite)]
+            self.play = True
         return self.image
+    
+    #Update to change sprite for animation
+    def update(self):
+        if (self.play):
+            self.vis_sprite += 0.2
+            if (self.vis_sprite >= len(self.sprites)):
+                self.vis_sprite = 0
+            self.image = self.sprites[int(self.vis_sprite)]
     
     def getPosition(self):
         

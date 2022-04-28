@@ -174,19 +174,18 @@ def set_text(string, coordx, coordy, fontSize): #Function to set text
 class SubmersiveSprite(pygame.sprite.Sprite):
     def __init__(self,submersive:Submersive):
         super(SubmersiveSprite,self).__init__()
-        # Define a small rect as the sprite
-        self.image = pygame.Surface([10,20])
-        self.image.fill((0,0,0))
-        # self.rect = self.image.get_rect()
+        # Add sprite
+        self.image = pygame.image.load('./sprites/subblack.png')
+        self.rect = self.image.get_rect()
         self.submersive=submersive
     
     def getSprite(self):
         if self.submersive.state==SubmersiveStates.HOLDSTATE:
-            self.image.fill((0,0,0))
+            self.image = pygame.image.load('./sprites/subblack.png')
         elif self.submersive.state==SubmersiveStates.MOVESTATE:
-            self.image.fill((255,0,0))
+            self.image = pygame.image.load('./sprites/subred.png')
         elif self.submersive.state==SubmersiveStates.DETECTSTATE:
-            self.image.fill((0,255,0))
+            self.image = pygame.image.load('./sprites/subgreen.png')
         # Merge the text with the sprite put the text above the sprite
         
 

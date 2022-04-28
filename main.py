@@ -51,6 +51,8 @@ while running:
         toBlit=sprite.getSprite()
         position=sprite.getPosition()
         name=sprite.getName()
+        #Update sprite for animation
+        sprite.update()
         
         name_pos=position[0]-name.get_width(),position[1]-10
         screen.blit(name,name_pos)
