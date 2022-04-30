@@ -2,16 +2,22 @@ from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite, SubmersiveStates
 import random
 import pygame
-HEIGHT,WIDTH=500,500
+HEIGHT,WIDTH=768,1024
+Y_OFF,X_OFF=16,24
 
 # Faults
 faults = [ {"name": "structural-damage", "probability": 0.01, "timeToDetect": 100 } ]
 
+y_windmills = 13
+x_windmills = 22
+y_space = (HEIGHT-Y_OFF) // y_windmills
+x_space = (WIDTH-X_OFF) // x_windmills
 
 # Create windmills randomly
 windfarm=[]
-for i in range(0,40):
-    windfarm.append(Windmill(faults,(random.randint(0,HEIGHT),random.randint(0,WIDTH),i)))
+for i in range(x_windmills):
+    for j in range(y_windmills):
+        windfarm.append(Windmill(faults,(X_OFF+i*x_space,Y_OFF+j*y_space),str(j*x_windmills+i+1)))
 
 
 
@@ -33,7 +39,7 @@ for windmill in windfarm:
 pygame.init()
 
 # Set up the drawing window
-screen = pygame.display.set_mode([500, 500])
+screen = pygame.display.set_mode([WIDTH, HEIGHT])
 clock = pygame.time.Clock()
 
 # Run until the user asks to quit
