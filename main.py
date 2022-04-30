@@ -6,7 +6,7 @@ HEIGHT,WIDTH=768,1024
 Y_OFF,X_OFF=16,24
 
 # Faults
-faults = [ {"name": "structural-damage", "probability": 0.01, "timeToDetect": 100 } ]
+faults = [ {"name": "structural-damage", "probability": 0.0001, "timeToDetect": 100 } ]
 
 y_windmills = 13
 x_windmills = 22
