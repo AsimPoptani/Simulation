@@ -34,6 +34,12 @@ class Windmill():
                     self.faults.append(fault)
                     return
 
+    def has_fault(self):
+        return len(self.faults) > 0
+
+    def fix_fault(self):
+        self.faults.pop(0)
+
     def collision(self, x, y) -> bool:
         """is the given x and y position within this windmill's position ± rotor radius ?"""
         left = x < self.pos[0] + ROTOR_RADIUS

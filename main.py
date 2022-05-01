@@ -1,3 +1,5 @@
+from math import inf, sqrt, pow
+
 from config import WIDTH, HEIGHT
 from locations import locations
 
@@ -60,7 +62,23 @@ while running:
         screen.blit(name,name_pos)
         screen.blit(toBlit,position)
 
-    submersive.set_move_state((200,50,5))
+    destination = (0, 0)
+    smallest_distance = inf
+    for windmill in windfarm:
+        if windmill.collision(submersive.pos[0], submersive.pos[1]):
+            if windmill.has_fault():
+                windmill.fix_fault()
+            else:
+                print("cRaSh !!")
+        if windmill.has_fault():
+            x_diff = pow(submersive.pos[0] - windmill.pos[0], 2)
+            y_diff = pow(submersive.pos[1] - windmill.pos[1], 2)
+            diff = x_diff + y_diff
+            distance = sqrt(diff)
+            if distance < smallest_distance:
+                smallest_distance = distance
+                destination = windmill.pos
+    submersive.set_move_state((*destination, 5000))
     submersive.step(windfarm)
 
     for windmill in windfarm:

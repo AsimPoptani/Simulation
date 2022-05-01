@@ -1,4 +1,4 @@
-
+from display import map_x, map_y
 from Windmill import Windmill
 import numpy as np
 from enum import Enum
@@ -33,7 +33,7 @@ class Submersive():
     standard_detection_time=50
 
 
-    def __init__(self,name=None,communication_range=10,detection_range=10,start_pos=(0,0,0), abs_max_velocity=1, battery_level=1000):
+    def __init__(self,name=None,communication_range=10,detection_range=10,start_pos=(0,0,0), abs_max_velocity=1000, battery_level=1000):
         
         # If no name is given, generate  one
         if name is None:
@@ -193,8 +193,9 @@ class SubmersiveSprite(pygame.sprite.Sprite):
         # return 
     
     def getPosition(self):
-        
-        return self.submersive.pos[0],self.submersive.pos[1]
+        x = map_x(self.submersive.pos[0])
+        y = map_y(self.submersive.pos[1])
+        return x, y
     
     def getName(self):
         text=set_text(self.submersive.name,0,0,10)[0]
