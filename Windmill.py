@@ -1,4 +1,7 @@
 import random, pygame
+from display import map_x, map_y
+from config import ROTOR_RADIUS
+
 class Windmill():
     # A windmill has several states
     # Working Normally
@@ -30,6 +33,14 @@ class Windmill():
                 if fault not in self.faults:
                     self.faults.append(fault)
                     return
+
+    def collision(self, x, y) -> bool:
+        """is the given x and y position within this windmill's position ± rotor radius ?"""
+        left = x < self.pos[0] + ROTOR_RADIUS
+        rite = self.pos[0] - ROTOR_RADIUS < x
+        uppp = self.pos[1] - ROTOR_RADIUS < y
+        down = y < self.pos[1] + ROTOR_RADIUS
+        return left and rite and uppp and down
     
     def __str__(self) -> str:
         return f"Windmill at {self.pos} \n with faults: {self.faults}"
@@ -84,8 +95,9 @@ class WindmillSprite(pygame.sprite.Sprite):
             self.image = self.sprites[int(self.vis_sprite)]
     
     def getPosition(self):
-        
-        return self.windmill.pos[0],self.windmill.pos[1]
+        x = map_x(self.windmill.pos[0])
+        y = map_y(self.windmill.pos[1])
+        return x, y
     
     def getName(self):
         text=set_text(self.windmill.name,0,0,10)[0]

@@ -1,23 +1,19 @@
+from config import WIDTH, HEIGHT
+from locations import locations
+
 from Windmill import Windmill, WindmillSprite
-from Submersive import Submersive, SubmersiveSprite, SubmersiveStates
-import random
+from Submersive import Submersive, SubmersiveSprite
 import pygame
-HEIGHT,WIDTH=768,1024
-Y_OFF,X_OFF=16,24
 
 # Faults
 faults = [ {"name": "structural-damage", "probability": 0.0001, "timeToDetect": 100 } ]
 
-y_windmills = 13
-x_windmills = 22
-y_space = (HEIGHT-Y_OFF) // y_windmills
-x_space = (WIDTH-X_OFF) // x_windmills
-
-# Create windmills randomly
+# Create windmills according to the generated locations
 windfarm=[]
-for i in range(x_windmills):
-    for j in range(y_windmills):
-        windfarm.append(Windmill(faults,(X_OFF+i*x_space,Y_OFF+j*y_space),str(j*x_windmills+i+1)))
+for location in locations:
+    x = location[0]
+    y = location[1]
+    windfarm.append(Windmill(faults, (x, y), str(len(windfarm)+1)))
 
 
 
