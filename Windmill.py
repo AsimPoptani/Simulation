@@ -1,5 +1,5 @@
 import random, pygame
-from display import map_x, map_y
+from display import x_to_pixels, y_to_pixels
 from config import ROTOR_RADIUS
 
 class Windmill():
@@ -101,8 +101,8 @@ class WindmillSprite(pygame.sprite.Sprite):
             self.image = self.sprites[int(self.vis_sprite)]
     
     def getPosition(self):
-        x = map_x(self.windmill.pos[0])
-        y = map_y(self.windmill.pos[1])
+        x = x_to_pixels(self.windmill.pos[0])
+        y = y_to_pixels(self.windmill.pos[1])
         return x, y
     
     def getName(self):

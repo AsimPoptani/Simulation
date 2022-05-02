@@ -1,6 +1,6 @@
 from math import inf, sqrt, pow
 
-from config import WIDTH, HEIGHT
+from config import WIDTH, HEIGHT , COASTAL_LOCATION
 from locations import locations
 
 from Windmill import Windmill, WindmillSprite
@@ -21,7 +21,7 @@ for location in locations:
 
 
 # Create submersive
-submersive=Submersive(start_pos=(0,0,0))
+submersive=Submersive(start_pos=(*COASTAL_LOCATION,0))
 
 
 
@@ -62,7 +62,7 @@ while running:
         screen.blit(name,name_pos)
         screen.blit(toBlit,position)
 
-    destination = (0, 0)
+    destination = submersive.pos[:2]
     smallest_distance = inf
     for windmill in windfarm:
         if windmill.collision(submersive.pos[0], submersive.pos[1]):

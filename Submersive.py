@@ -1,4 +1,4 @@
-from display import map_x, map_y
+from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import numpy as np
 from enum import Enum
@@ -193,8 +193,8 @@ class SubmersiveSprite(pygame.sprite.Sprite):
         # return 
     
     def getPosition(self):
-        x = map_x(self.submersive.pos[0])
-        y = map_y(self.submersive.pos[1])
+        x = x_to_pixels(self.submersive.pos[0])
+        y = y_to_pixels(self.submersive.pos[1])
         return x, y
     
     def getName(self):

@@ -1,15 +1,22 @@
-from config import WIDTH, HEIGHT, X_OFF, Y_OFF
-from locations import locations
+from config import WIDTH, HEIGHT
+from config import MIN_AREA_X, MIN_AREA_Y, MAX_AREA_X, MAX_AREA_Y
 
 def map_value(x, smn, smx, tmn, tmx):
 	"""Map x in the source range, [smn,smx], to the target range, [tmn,tmx]"""
 	return tmn + (tmx - tmn) * ((x - smn) / (smx - smn))
 
-def map_x(x):
+def x_to_pixels(x):
 	"""Maps the given horizontal position in meters into pixels on the display"""
-	return map_value(x, 0, locations[-1][0], X_OFF, WIDTH - 2*X_OFF)
+	return map_value(x, MIN_AREA_X, MAX_AREA_X, 0, WIDTH)
 
-def map_y(y):
+def y_to_pixels(y):
 	"""Maps the given vertical position in meters into pixels on the display"""
-	return map_value(y, 0, locations[-1][1], Y_OFF, HEIGHT - 2*Y_OFF)
+	return map_value(y, MIN_AREA_Y, MAX_AREA_Y, 0, HEIGHT)
 
+def pixels_to_x(x):
+	"""Maps the given horizontal position in pixels on the display into meters"""
+	return map_value(x, 0, WIDTH, MIN_AREA_X, MAX_AREA_X)
+
+def pixels_to_y(y):
+	"""Maps the given vertical position in pixels on the display into meters"""
+	return map_value(y, 0, HEIGHT, MIN_AREA_Y, MAX_AREA_Y)

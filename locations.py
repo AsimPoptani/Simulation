@@ -1,9 +1,11 @@
-from config import N_WINDMILLS_X, N_WINDMILLS_Y, DISTANCE_FROM_SHORE, WINDFARM_WIDTH, WINDFARM_HEIGHT
-from math import sin, cos, pi
+from config import N_WINDMILLS_X, N_WINDMILLS_Y
+from config import DISTANCE_FROM_SHORE, COASTAL_LOCATION, DIRECTION_OF_WINDFARM
+from config import WINDFARM_WIDTH, WINDFARM_HEIGHT
+from math import sin, cos
 
-# the control centre / coast is located at (0,0) and the windfarm at a 45° angle
-start_x = int(DISTANCE_FROM_SHORE * sin(pi / 4))
-start_y = int(DISTANCE_FROM_SHORE * cos(pi / 4))
+# the windfarm top left corner is the distance from the control centre / coast
+start_x = abs(COASTAL_LOCATION[0] + int(DISTANCE_FROM_SHORE * sin(DIRECTION_OF_WINDFARM)))
+start_y = abs(COASTAL_LOCATION[1] + int(DISTANCE_FROM_SHORE * cos(DIRECTION_OF_WINDFARM)))
 
 # the horizontal and vertical distances between windmills
 x_space = WINDFARM_WIDTH // N_WINDMILLS_X
