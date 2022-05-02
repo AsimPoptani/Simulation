@@ -1,6 +1,7 @@
 import random, pygame
 from display import x_to_pixels, y_to_pixels
 from config import ROTOR_RADIUS
+from Weather import Windspeed
 
 class Windmill():
     # A windmill has several states
@@ -18,6 +19,8 @@ class Windmill():
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
+        self.wind = Windspeed()
+        self.wswd = self.wind.get_speed(12,31,23)
         if name is None:
             self.name = "Windmill_" + str(Windmill.COUNTER)
             Windmill.COUNTER += 1
@@ -33,6 +36,7 @@ class Windmill():
                 if fault not in self.faults:
                     self.faults.append(fault)
                     return
+        self.wswd = self.wind.update()
 
     def has_fault(self):
         return len(self.faults) > 0
@@ -75,8 +79,6 @@ class WindmillSprite(pygame.sprite.Sprite):
         self.sprites.append(pygame.image.load('./sprites/wind-turbine4.png'))
         self.sprites.append(pygame.image.load('./sprites/wind-turbine5.png'))
         self.sprites.append(pygame.image.load('./sprites/wind-turbine6.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine7.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine8.png'))
         self.vis_sprite = 0
         self.image = self.sprites[self.vis_sprite]
         self.rect = self.image.get_rect()
