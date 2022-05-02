@@ -24,9 +24,9 @@ class Windspeed():
 
     # Account for noise / slight variations in speed across wind turbines
     def update(self):
-        self.speed = round(self.speed * random.uniform(0.8,1.2),2)
-        self.direction = round(self.direction * random.uniform(0.8,1.2),2)
-        return self.speed, self.direction
+        self.speedu = round(self.speed * random.uniform(0.95,1.05),2)
+        self.directionu = round(self.direction * random.uniform(0.95,1.05),2)
+        return self.speedu, self.directionu
 
     # call update_hour only after get_speed. Updates the widn speed and direction by an hour when called. If get_speed is not called then default is the 1/1 hour 0
     def update_hour(self):
