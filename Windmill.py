@@ -45,7 +45,7 @@ class Windmill():
         self.data.update({"Wind Speed": wind_s_d_update[0]})
         self.data.update({"Wind Direction": wind_s_d_update[1]})
         self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
-        self.data.update({"Vibrations": self.datagen.get_vibrations(self.data["Wind Speed"])})
+        self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
 
     def has_fault(self):
         return len(self.faults) > 0
