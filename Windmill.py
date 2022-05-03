@@ -1,7 +1,7 @@
 import random, pygame
 from display import x_to_pixels, y_to_pixels
 from config import ROTOR_RADIUS
-from Weather import Windspeed
+from Weather import Datagen
 
 class Windmill():
     # A windmill has several states
@@ -19,8 +19,13 @@ class Windmill():
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
-        self.wind = Windspeed()
-        self.wswd = self.wind.get_speed(12,31,23)
+        self.data = {}
+        self.datagen = Datagen()
+        self.wind_s_d = self.datagen.get_speed(12,31,23)
+        self.data["Wind Speed"] = self.wind_s_d[0]
+        self.data["Wind Direction"] = self.wind_s_d[1]
+        self.data["Power"] = 0
+        self.data["Vibration"] = 0
         if name is None:
             self.name = "Windmill_" + str(Windmill.COUNTER)
             Windmill.COUNTER += 1
@@ -36,7 +41,11 @@ class Windmill():
                 if fault not in self.faults:
                     self.faults.append(fault)
                     return
-        self.wswd = self.wind.update()
+        wind_s_d_update = self.datagen.update()
+        self.data.update({"Wind Speed": wind_s_d_update[0]})
+        self.data.update({"Wind Direction": wind_s_d_update[1]})
+        self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
+        self.data.update({"Vibrations": self.datagen.get_vibrations(self.data["Wind Speed"])})
 
     def has_fault(self):
         return len(self.faults) > 0
@@ -97,7 +106,7 @@ class WindmillSprite(pygame.sprite.Sprite):
     #Update to change sprite for animation
     def update(self):
         if (self.play):
-            self.vis_sprite += 0.2
+            self.vis_sprite += 0.5
             if (self.vis_sprite >= len(self.sprites)):
                 self.vis_sprite = 0
             self.image = self.sprites[int(self.vis_sprite)]
