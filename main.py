@@ -1,3 +1,4 @@
+from ast import Sub
 from math import inf, sqrt, pow
 
 from config import WIDTH, HEIGHT , COASTAL_LOCATION
@@ -7,15 +8,27 @@ from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame
 
-# Faults
+# Todo move faults to JSON file
 faults = [ {"name": "structural-damage", "probability": 0.0001, "timeToDetect": 100 } ]
 
+SIMULATION_TIME_FAULTS=365
+N_DRONES=50
+
+
+
+
 # Create windmills according to the generated locations
-windfarm=[]
+windfarms=[]
+
+# Drones
+drones=[]
+
+
+
 for location in locations:
     x = location[0]
     y = location[1]
-    windfarm.append(Windmill(faults, (x, y), str(len(windfarm)+1)))
+    windfarms.append(Windmill(faults, (x, y), str(len(windfarms)+1)))
 
 
 
@@ -30,7 +43,7 @@ subSprite=SubmersiveSprite(submersive)
 
 sprites=[]
 sprites.append(subSprite)
-for windmill in windfarm:
+for windmill in windfarms:
     sprites.append(WindmillSprite(windmill))
 
 
@@ -39,6 +52,24 @@ pygame.init()
 # Set up the drawing window
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 clock = pygame.time.Clock()
+
+
+# Run a simulation of 1 year to generate faults in Windmills
+for i in range(SIMULATION_TIME_FAULTS):
+    for windmill in windfarms:
+        # TODO inside step add faults for each day etc
+        windmill.step()
+# Generate n_drones
+for _ in range(N_DRONES):
+    # Set starting position
+    sub=Submersive(start_pos=(*COASTAL_LOCATION,0))
+    drones.append(sub)
+    # Add to sprites
+    sprites.append(SubmersiveSprite(sub))
+
+# TODO Generate a plan for a set of drones to follow
+for _ in range(N_DRONES):
+    pass
 
 # Run until the user asks to quit
 running = True
@@ -64,7 +95,7 @@ while running:
 
     destination = submersive.pos[:2]
     smallest_distance = inf
-    for windmill in windfarm:
+    for windmill in windfarms:
         if windmill.collision(submersive.pos[0], submersive.pos[1]):
             if windmill.has_fault():
                 windmill.fix_fault()
@@ -79,9 +110,9 @@ while running:
                 smallest_distance = distance
                 destination = windmill.pos
     submersive.set_move_state((*destination, 5000))
-    submersive.step(windfarm)
+    submersive.step(windfarms)
 
-    for windmill in windfarm:
+    for windmill in windfarms:
         windmill.step()
 
     # Update the display
