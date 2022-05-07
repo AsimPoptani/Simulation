@@ -19,6 +19,7 @@ class Windmill():
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
+        self.timer_counter = 0
         self.data = {}
         self.datagen = Datagen()
         self.wind_s_d = self.datagen.get_speed(12,31,23)
@@ -41,11 +42,18 @@ class Windmill():
                 if fault not in self.faults:
                     self.faults.append(fault)
                     return
-        wind_s_d_update = self.datagen.update()
-        self.data.update({"Wind Speed": wind_s_d_update[0]})
-        self.data.update({"Wind Direction": wind_s_d_update[1]})
-        self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
-        self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
+
+    # Update data like windspeed only every x seconds (needs calculation)
+    def update_data(self):
+        self.timer_counter += 0.05
+        if int(self.timer_counter) == 1:
+            wind_s_d_update = self.datagen.update()
+            self.data.update({"Wind Speed": wind_s_d_update[0]})
+            self.data.update({"Wind Direction": wind_s_d_update[1]})
+            self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
+            self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
+        if self.timer_counter > 1:
+            self.timer_counter = 0
 
     def has_fault(self):
         return len(self.faults) > 0
@@ -95,11 +103,27 @@ class WindmillSprite(pygame.sprite.Sprite):
     
     def getSprite(self):
         if len(self.windmill.faults)>0:
-            self.image = pygame.image.load('./sprites/wind-turbine-fault.png')
-            #pygame.draw.circle(self.image,(255,0,0),(1,1),5)
+            # Apply color circles to see the faults move each circle by 5 if there is a circle there
+            x = 2
+            for fault in self.windmill.faults:
+                if fault["name"] == 'structural-damage':
+                    # Draw Red circle
+                    pygame.draw.circle(self.image,(255,0,0),(x,2),2)
+                    x += 5
+                if fault["name"] == 'gearbox-damage':
+                    # Draw Blue circle
+                    pygame.draw.circle(self.image,(0,0,255),(x,2),2)
+                    x += 5
+                if fault["name"] == 'generator-damage':
+                    # Draw Blue circle
+                    pygame.draw.circle(self.image,(0,255,0),(x,2),2)
+                    x += 5
             self.play = False
         else:
             self.image = self.sprites[int(self.vis_sprite)]
+            # clear all color circles if no faults
+            for x in range(2,len(self.windmill.potential_faults) * 5, 5):
+                pygame.draw.circle(self.image,(0,0,0,0),(x,2),2)
             self.play = True
         return self.image
     

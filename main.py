@@ -9,7 +9,7 @@ from Submersive import Submersive, SubmersiveSprite
 import pygame
 
 # Todo move faults to JSON file
-faults = [ {"name": "structural-damage", "probability": 0.0001, "timeToDetect": 100 } ]
+faults = [ {"name": "structural-damage", "probability": 0.0001, "timeToDetect": 100 }, {"name": "gearbox-damage", "probability": 0.0001, "timeToDetect": 100}, {"name": "generator-damage", "probability": 0.0001, "timeToDetect": 100} ]
 
 SIMULATION_TIME_FAULTS=365
 N_DRONES=50
@@ -114,6 +114,7 @@ while running:
 
     for windmill in windfarms:
         windmill.step()
+        windmill.update_data()
 
     # Update the display
     pygame.display.flip()
