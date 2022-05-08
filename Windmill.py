@@ -1,7 +1,9 @@
 import random, pygame
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR
 from Weather import Datagen
+from faults import FAULTS
+from colorsys import hsv_to_rgb
 
 class Windmill():
     # A windmill has several states
@@ -15,7 +17,7 @@ class Windmill():
     # Faults = {"structural-damage":{"probability":0.1,"timeToDetect":100}}
     # TODO needs guesstimate of time to detect and probability of happening
     COUNTER=0
-    def __init__(self,FAULTS,position,name=None) -> None:
+    def __init__(self,position,name=None) -> None:
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
@@ -37,10 +39,11 @@ class Windmill():
         # Only one fault can happen per step
         for fault in self.potential_faults:
             # print(self.potential_faults)
-            if random.random() < fault["probability"]:
+            if random.random() < fault["probability"] / FAULT_RATE_DIVISOR:
                 # Check if fault is already present
                 if fault not in self.faults:
                     self.faults.append(fault)
+                    print('Windmill',self.name, 'developed fault', fault["name"])
                     return
 
     # Update data like windspeed only every x seconds (needs calculation)
@@ -106,18 +109,12 @@ class WindmillSprite(pygame.sprite.Sprite):
             # Apply color circles to see the faults move each circle by 5 if there is a circle there
             x = 2
             for fault in self.windmill.faults:
-                if fault["name"] == 'structural-damage':
-                    # Draw Red circle
-                    pygame.draw.circle(self.image,(255,0,0),(x,2),2)
-                    x += 5
-                if fault["name"] == 'gearbox-damage':
-                    # Draw Blue circle
-                    pygame.draw.circle(self.image,(0,0,255),(x,2),2)
-                    x += 5
-                if fault["name"] == 'generator-damage':
-                    # Draw Blue circle
-                    pygame.draw.circle(self.image,(0,255,0),(x,2),2)
-                    x += 5
+                hue_diff = 359 / len(FAULTS)
+                hue = fault["id"] * hue_diff
+                colour = hsv_to_rgb(hue, 1, 1)
+                colour = tuple(map(lambda x: round(x * 255), colour))
+                pygame.draw.circle(self.image, colour, (x,2), 2)
+                x += 5
             self.play = False
         else:
             self.image = self.sprites[int(self.vis_sprite)]

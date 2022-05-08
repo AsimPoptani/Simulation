@@ -8,9 +8,6 @@ from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame
 
-# Todo move faults to JSON file
-faults = [ {"name": "structural-damage", "probability": 0.0001, "timeToDetect": 100 }, {"name": "gearbox-damage", "probability": 0.0001, "timeToDetect": 100}, {"name": "generator-damage", "probability": 0.0001, "timeToDetect": 100} ]
-
 SIMULATION_TIME_FAULTS=365
 N_DRONES=50
 
@@ -28,7 +25,7 @@ drones=[]
 for location in locations:
     x = location[0]
     y = location[1]
-    windfarms.append(Windmill(faults, (x, y), str(len(windfarms)+1)))
+    windfarms.append(Windmill((x, y), str(len(windfarms)+1)))
 
 
 
@@ -93,7 +90,7 @@ while running:
         screen.blit(name,name_pos)
         screen.blit(toBlit,position)
 
-    destination = submersive.pos[:2]
+    destination = COASTAL_LOCATION
     smallest_distance = inf
     for windmill in windfarms:
         if windmill.collision(submersive.pos[0], submersive.pos[1]):
@@ -109,7 +106,7 @@ while running:
             if distance < smallest_distance:
                 smallest_distance = distance
                 destination = windmill.pos
-    submersive.set_move_state((*destination, 5000))
+    submersive.set_move_state((*destination, 0))
     submersive.step(windfarms)
 
     for windmill in windfarms:
