@@ -1,6 +1,6 @@
 import random, pygame
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL
 from Weather import Datagen
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -48,15 +48,13 @@ class Windmill():
 
     # Update data like windspeed only every x seconds (needs calculation)
     def update_data(self):
-        self.timer_counter += 0.05
-        if int(self.timer_counter) == 1:
+        if int(self.timer_counter) % DATA_UPDATE_INTERVAL == 0:
             wind_s_d_update = self.datagen.update()
             self.data.update({"Wind Speed": wind_s_d_update[0]})
             self.data.update({"Wind Direction": wind_s_d_update[1]})
             self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
             self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
-        if self.timer_counter > 1:
-            self.timer_counter = 0
+        self.timer_counter += 1
 
     def has_fault(self):
         return len(self.faults) > 0
