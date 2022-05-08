@@ -1,10 +1,13 @@
+import math
+
 from config import COASTAL_LOCATION
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import numpy as np
 from enum import Enum
 import pygame
-from math import inf, sqrt, pow
+from math import inf, sqrt, pow, atan2, sin, cos
+
 
 class SubmersiveStates(Enum):
     MOVESTATE = 0
@@ -89,13 +92,18 @@ class Submersive():
         current_pos=self.pos
         # Add to history
         self.pos_history.append(current_pos)
+
         # Find the difference between the current position and the destination
         diff=np.array(destination)-np.array(current_pos)
-        diff=np.clip(diff,-self.abs_max_velocity,self.abs_max_velocity,diff)
-        # Calulate the new position
-        new_pos=np.array(current_pos)+np.array(diff)
+
+        theta = atan2(diff[1], diff[0])
+        distance = sqrt(pow(diff[0], 2) + pow(diff[1], 2))
+        distance = min(distance, self.abs_max_velocity)
+        opp = distance * cos(theta)
+        adj = distance * sin(theta)
         # Convert to tuple
-        new_pos=tuple(new_pos)
+        new_pos = (current_pos[0] + opp, current_pos[1] + adj, 0)
+
         # Update the position
         self.pos=new_pos
         # If new position is the same as destination then return true
