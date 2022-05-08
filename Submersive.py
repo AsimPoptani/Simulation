@@ -1,8 +1,11 @@
+from config import COASTAL_LOCATION
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import numpy as np
 from enum import Enum
 import pygame
+from math import inf, sqrt, pow
+
 class SubmersiveStates(Enum):
     MOVESTATE = 0
     DETECTSTATE = 1
@@ -99,8 +102,29 @@ class Submersive():
         if self.pos==destination:
             return True
         return False
+
+    def scan_farm(self, windfarms:list[Windmill]):
+        destination = COASTAL_LOCATION
+        smallest_distance = inf
+        for windmill in windfarms:
+            if windmill.collision(self.pos[0], self.pos[1]):
+                if windmill.has_fault():
+                    windmill.fix_fault()
+                else:
+                    print("cRaSh !!")
+            if windmill.has_fault():
+                x_diff = pow(self.pos[0] - windmill.pos[0], 2)
+                y_diff = pow(self.pos[1] - windmill.pos[1], 2)
+                diff = x_diff + y_diff
+                distance = sqrt(diff)
+                if distance < smallest_distance:
+                    smallest_distance = distance
+                    destination = windmill.pos
+        self.set_move_state((*destination, 0))
     
     def step(self,windfarm:list[Windmill]):
+        self.scan_farm(windfarm)
+
         if self.new_state==None:
             print("Error: No new state set, setting to hold state")
             self.new_state=SubmersiveStates.HOLDSTATE

@@ -90,23 +90,6 @@ while running:
         screen.blit(name,name_pos)
         screen.blit(toBlit,position)
 
-    destination = COASTAL_LOCATION
-    smallest_distance = inf
-    for windmill in windfarms:
-        if windmill.collision(submersive.pos[0], submersive.pos[1]):
-            if windmill.has_fault():
-                windmill.fix_fault()
-            else:
-                print("cRaSh !!")
-        if windmill.has_fault():
-            x_diff = pow(submersive.pos[0] - windmill.pos[0], 2)
-            y_diff = pow(submersive.pos[1] - windmill.pos[1], 2)
-            diff = x_diff + y_diff
-            distance = sqrt(diff)
-            if distance < smallest_distance:
-                smallest_distance = distance
-                destination = windmill.pos
-    submersive.set_move_state((*destination, 0))
     submersive.step(windfarms)
 
     for windmill in windfarms:
