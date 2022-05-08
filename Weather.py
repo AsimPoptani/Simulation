@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from config import ROTOR_RADIUS
+from config import ROTOR_RADIUS, MAX_POWER
 
 # Horsea wind speed data from https://power.larc.nasa.gov/data-access-viewer/
 path = open('./hornsea-ws-wd.csv')
@@ -47,6 +47,7 @@ class Datagen():
     def get_power(self, windspeed):
         area = np.pi * (ROTOR_RADIUS**2)
         power = round((0.5 * AIR_DENSITY * area * (windspeed**3) * POWER_COEFFICIENT),2)
+        power = min(power, MAX_POWER)
         return power
 
     # To do - get vibrations according to wind speed, turbine height, angle of blade, rpm, f = N/60 where N is rpm
