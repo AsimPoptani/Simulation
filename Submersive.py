@@ -114,6 +114,7 @@ class Submersive():
     def scan_farm(self, windfarms:list[Windmill]):
         destination = COASTAL_LOCATION
         smallest_distance = inf
+        max_priority = 0
         for windmill in windfarms:
             if windmill.collision(self.pos[0], self.pos[1]):
                 if windmill.has_fault():
@@ -121,6 +122,15 @@ class Submersive():
                 else:
                     print("cRaSh !!")
             if windmill.has_fault():
+                priority = 0
+                for fault in windmill.faults:
+                    if priority < fault["priority"]:
+                        priority = fault["priority"]
+                    if fault["priority"] > max_priority:
+                        max_priority = fault["priority"]
+                        smallest_distance = inf
+                if priority < max_priority:
+                    continue
                 x_diff = pow(self.pos[0] - windmill.pos[0], 2)
                 y_diff = pow(self.pos[1] - windmill.pos[1], 2)
                 diff = x_diff + y_diff

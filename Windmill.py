@@ -43,7 +43,7 @@ class Windmill():
                 # Check if fault is already present
                 if fault not in self.faults:
                     self.faults.append(fault)
-                    print('Windmill',self.name, 'developed fault', fault["name"])
+                    print('Windmill',self.name, 'developed fault', fault["name"], 'priority', fault["priority"])
                     return
 
     # Update data like windspeed only every x seconds (needs calculation)
