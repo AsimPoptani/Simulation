@@ -104,6 +104,7 @@ class WindmillSprite(pygame.sprite.Sprite):
     
     def getSprite(self):
         if len(self.windmill.faults)>0:
+            self.image = pygame.image.load('./sprites/wind-turbine-fault.png')
             # Apply color circles to see the faults move each circle by 5 if there is a circle there
             x = 2
             for fault in self.windmill.faults:
