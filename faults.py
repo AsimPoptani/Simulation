@@ -1,4 +1,6 @@
 # feel free to turn this into a JSON file, pull it, parse it, and return the associated dicts ¯\_(ツ)_/¯
+# Annual faults
+# TODO add colours to the faults
 FAULTS =\
     [
         {"id" : 0,  "name": "break-system",    "probability": 0.0125,  "priority" : 1, "timeToDetect": 100},

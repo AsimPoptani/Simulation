@@ -12,6 +12,8 @@ class Windmill():
     # Working Normally
     # Broken
 
+    AMOUNT_OF_STEPS_TO_DAY=24
+
 
     # Pass in faults with probability
     # TODO add time to detect with Gaussian noise
@@ -23,8 +25,11 @@ class Windmill():
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
+        # Data timer
         self.timer_counter = 0
+        # Data generated
         self.data = {}
+        # Data generator
         self.datagen = Datagen()
         self.wind_s_d = self.datagen.get_speed(12,31,23)
         self.data["Wind Speed"] = self.wind_s_d[0]
@@ -38,9 +43,11 @@ class Windmill():
             self.name = name
     
     def step(self):
+        # TODO add update data here
+        # 
         # Only one fault can happen per step
         for fault in self.potential_faults:
-            # print(self.potential_faults)
+            # Looping daily rate
             if random.random() < fault["probability"] / FAULT_RATE_DIVISOR:
                 # Check if fault is already present
                 if fault not in self.faults:
@@ -61,8 +68,10 @@ class Windmill():
     def has_fault(self):
         return len(self.faults) > 0
 
+    # TODO change to inspect_fault pops all and sets status to inspected
     def fix_fault(self):
         self.faults.pop(0)
+
 
     def collision(self, x, y, radius) -> bool:
         """is the given x and y position and radius within this windmill's position ± rotor radius ?"""
@@ -70,6 +79,7 @@ class Windmill():
         radii = radius + ROTOR_RADIUS
         return distance < radii
 
+    # TODO may not need
     def safezone(self, x, y, radius) -> bool:
         """is the given x and y position and radius within this windmill's safe zone ?"""
         distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
@@ -83,6 +93,9 @@ class Windmill():
     def __repr__(self) -> str:
         return str(self)
 
+
+
+# TODO Helper function put into another file
 def set_text(string, coordx, coordy, fontSize): #Function to set text
     font = pygame.font.Font('freesansbold.ttf', fontSize) 
     #(0, 0, 0) is black, to make black text
@@ -97,6 +110,7 @@ class WindmillSprite(pygame.sprite.Sprite):
         super(WindmillSprite,self).__init__()
         #List of images for animation
         self.play = True
+        # Images for animation
         self.sprites = []
         self.sprites.append(pygame.image.load('./sprites/wind-turbine1.png'))
         self.sprites.append(pygame.image.load('./sprites/wind-turbine2.png'))
@@ -104,7 +118,9 @@ class WindmillSprite(pygame.sprite.Sprite):
         self.sprites.append(pygame.image.load('./sprites/wind-turbine4.png'))
         self.sprites.append(pygame.image.load('./sprites/wind-turbine5.png'))
         self.sprites.append(pygame.image.load('./sprites/wind-turbine6.png'))
+        # Current image index
         self.vis_sprite = 0
+        # Current image
         self.image = self.sprites[self.vis_sprite]
         self.rect = self.image.get_rect()
         self.windmill=windmill
@@ -113,8 +129,10 @@ class WindmillSprite(pygame.sprite.Sprite):
         if len(self.windmill.faults)>0:
             self.image = pygame.image.load('./sprites/wind-turbine-fault.png')
             # Apply color circles to see the faults move each circle by 5 if there is a circle there
+            # TODO change to use the fault color - redone
             x = 2
             for fault in self.windmill.faults:
+                # Get colour from fault table
                 hue_diff = 359 / len(FAULTS)
                 hue = fault["id"] * hue_diff
                 colour = hsv_to_rgb(hue, 1, 1)

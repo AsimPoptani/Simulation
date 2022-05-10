@@ -1,6 +1,3 @@
-from ast import Sub
-from math import inf, sqrt, pow
-
 from config import WIDTH, HEIGHT , COASTAL_LOCATION
 from locations import locations
 
@@ -56,6 +53,8 @@ for i in range(SIMULATION_TIME_FAULTS):
     for windmill in windfarms:
         # TODO inside step add faults for each day etc
         windmill.step()
+
+
 # Generate n_drones
 for _ in range(N_DRONES):
     # Set starting position
@@ -94,6 +93,7 @@ while running:
 
     for windmill in windfarms:
         windmill.step()
+        # TODO this needs to be removed
         windmill.update_data()
 
     # Update the display

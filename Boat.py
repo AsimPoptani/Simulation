@@ -1,3 +1,23 @@
+# TODO CHANGE ME TO BOAT WHO CAN CARRY Submersives
+# Destination
+# Current position
+# Current state
+# Name
+# Maximum velocity
+# Fuel
+# Fuel consumption
+# Home position
+# Communication drone range
+# drones
+# max_drones_capacity
+
+# Class functions
+# 
+# Recive a path of points[x,y]
+# Deploy drone (destinations[],rendevous[])
+# Recieve drone
+# Charge drone
+
 
 from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
