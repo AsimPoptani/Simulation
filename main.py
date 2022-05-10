@@ -1,5 +1,7 @@
 from config import WIDTH, HEIGHT , COASTAL_LOCATION
 from locations import locations
+from faults import FAULTS
+from colorsys import hsv_to_rgb
 
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
@@ -82,12 +84,15 @@ while running:
         toBlit=sprite.getSprite()
         position=sprite.getPosition()
         name=sprite.getName()
+        battery = sprite.getBattery()
         #Update sprite for animation
         sprite.update()
         
         name_pos=position[0]-name.get_width(),position[1]-10
         screen.blit(name,name_pos)
         screen.blit(toBlit,position)
+        battery_pos = position[0]-battery.get_width(),position[1]
+        screen.blit(battery,battery_pos)
 
     submersive.step(windfarms)
 
@@ -95,6 +100,21 @@ while running:
         windmill.step()
         # TODO this needs to be removed
         windmill.update_data()
+
+    # Create legend
+    box_size = (int(WIDTH/5), int(HEIGHT/3))
+    pygame.draw.rect(screen, (0,0,0), pygame.Rect((WIDTH-box_size[0], HEIGHT-box_size[1]), box_size), width=2)
+    dot_pos = 0
+    for fault in FAULTS:
+        hue_diff = 359 / len(FAULTS)
+        hue = fault["id"] * hue_diff
+        colour = hsv_to_rgb(hue, 1, 1)
+        colour = tuple(map(lambda x: round(x * 255), colour))
+        pygame.draw.circle(screen, colour, (WIDTH-box_size[0] + 10, HEIGHT-box_size[1] + 10 + dot_pos), 5)
+        font = pygame.font.Font('freesansbold.ttf', 10)
+        text = font.render(fault["name"], 1, (0,0,0))
+        screen.blit(text, (WIDTH-box_size[0] + 18, HEIGHT-box_size[1] + 5 + dot_pos))
+        dot_pos += int((box_size[1]-5) / len(FAULTS))
 
     # Update the display
     pygame.display.flip()

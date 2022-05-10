@@ -27,11 +27,11 @@ class Windmill():
         self.faults=[]
         # Data timer
         self.timer_counter = 0
-        # Data generated
+        # Data generated from turbines WindSpeed in m/s, Wind direction in degrees, power in Watts, Vibration in m/s^2 (accerleration)
         self.data = {}
         # Data generator
         self.datagen = Datagen()
-        self.wind_s_d = self.datagen.get_speed(12,31,23)
+        self.wind_s_d = self.datagen.get_speed(1,1,0)
         self.data["Wind Speed"] = self.wind_s_d[0]
         self.data["Wind Direction"] = self.wind_s_d[1]
         self.data["Power"] = 0
@@ -62,6 +62,8 @@ class Windmill():
             self.data.update({"Wind Speed": wind_s_d_update[0]})
             self.data.update({"Wind Direction": wind_s_d_update[1]})
             self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
+            # add vibrational extras check each fault in the faults and then apply a multiplier or noise based on data before updating data
+            # Only the larger vibrational data fault takes effect.
             self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
         self.timer_counter += 1
 
@@ -130,6 +132,7 @@ class WindmillSprite(pygame.sprite.Sprite):
             self.image = pygame.image.load('./sprites/wind-turbine-fault.png')
             # Apply color circles to see the faults move each circle by 5 if there is a circle there
             # TODO change to use the fault color - redone
+            # Also add key legend to show which color is which
             x = 2
             for fault in self.windmill.faults:
                 # Get colour from fault table
@@ -156,6 +159,18 @@ class WindmillSprite(pygame.sprite.Sprite):
                 self.vis_sprite = 0
             self.image = self.sprites[int(self.vis_sprite)]
     
+    def getBattery(self):
+        if self.windmill.data["Power"] > 5600000:
+            return pygame.image.load('./sprites/arrow-4.png')
+        elif self.windmill.data["Power"] > 4200000:
+            return pygame.image.load('./sprites/arrow-3.png')
+        elif self.windmill.data["Power"] > 2800000:
+            return pygame.image.load('./sprites/arrow-2.png')
+        elif self.windmill.data["Power"] > 1400000:
+            return pygame.image.load('./sprites/arrow-1.png')
+        else:
+            return pygame.image.load('./sprites/arrow-empty.png')
+
     def getPosition(self):
         x = x_to_pixels(self.windmill.pos[0])
         y = y_to_pixels(self.windmill.pos[1])
