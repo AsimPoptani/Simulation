@@ -1,4 +1,3 @@
-import math
 
 from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
