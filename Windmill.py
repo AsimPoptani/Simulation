@@ -1,6 +1,8 @@
 import random, pygame
+from math import sqrt
+
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY, DRONE_SAFE_ZONE
 from Weather import Datagen
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -62,14 +64,19 @@ class Windmill():
     def fix_fault(self):
         self.faults.pop(0)
 
-    def collision(self, x, y) -> bool:
-        """is the given x and y position within this windmill's position ± rotor radius ?"""
-        left = x < self.pos[0] + ROTOR_RADIUS
-        rite = self.pos[0] - ROTOR_RADIUS < x
-        uppp = self.pos[1] - ROTOR_RADIUS < y
-        down = y < self.pos[1] + ROTOR_RADIUS
-        return left and rite and uppp and down
-    
+    def collision(self, x, y, radius) -> bool:
+        """is the given x and y position and radius within this windmill's position ± rotor radius ?"""
+        distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
+        radii = radius + ROTOR_RADIUS
+        return distance < radii
+
+    def safezone(self, x, y, radius) -> bool:
+        """is the given x and y position and radius within this windmill's safe zone ?"""
+        distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
+        radii = radius + ROTOR_RADIUS + DRONE_MAX_VELOCITY
+        safe_zone = distance < radii
+        return safe_zone and not self.collision(x, y, radius * DRONE_SAFE_ZONE)
+
     def __str__(self) -> str:
         return f"Windmill at {self.pos} \n with faults: {self.faults}"
     
