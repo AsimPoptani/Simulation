@@ -1,6 +1,6 @@
 import math
 
-from config import COASTAL_LOCATION
+from config import COASTAL_LOCATION, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import numpy as np
@@ -116,7 +116,7 @@ class Submersive():
         smallest_distance = inf
         max_priority = 0
         for windmill in windfarms:
-            if windmill.collision(self.pos[0], self.pos[1]):
+            if windmill.collision(self.pos[0], self.pos[1], DRONE_RADIUS):
                 if windmill.has_fault():
                     windmill.fix_fault()
                 else:
