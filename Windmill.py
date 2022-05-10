@@ -65,7 +65,6 @@ class Windmill():
             # add vibrational extras check each fault in the faults and then apply a multiplier or noise based on data before updating data
             # Only the larger vibrational data fault takes effect.
             self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
-            print(self.data)
         self.timer_counter += 1
 
     def has_fault(self):
