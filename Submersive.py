@@ -119,34 +119,40 @@ class Submersive():
         # Biggest fault 
         max_priority = 0
         for windmill in windfarms:
+            # if the drone has reached this windturbine
             if windmill.collision(self.pos[0], self.pos[1], DRONE_RADIUS):
-                print("cRaSh !!")
-                self.set_hold_state()
-                return # this drone is no longer operational
-            elif windmill.safezone(self.pos[0], self.pos[1], DRONE_RADIUS):
+                # and the turbine has a fault, inspect the fault
                 if windmill.has_fault():
                     windmill.fix_fault()
-                if self.current_velocity == self.abs_max_velocity:
-                    self.current_velocity /= 4
-            elif self.current_velocity < self.abs_max_velocity and self.state != SubmersiveStates.HOLDSTATE:
-                self.current_velocity = self.abs_max_velocity
-            if windmill.has_fault():
+            # otherwise, if this turbine has a fault
+            elif windmill.has_fault():
+                # the maximum priority for this turbine
                 priority = 0
                 for fault in windmill.faults:
+                    # if this fault has a higher priority than the other faults seen so far for this turbine
                     if priority < fault["priority"]:
+                        # set this turbine's priority to this new maximum
                         priority = fault["priority"]
+                    # if this fault has a higher priority than any other fault for all turbines seen so far
                     if fault["priority"] > max_priority:
+                        # set the maximum priority for all turbines to this fault's priority
                         max_priority = fault["priority"]
+                        # and reset the smallest distance to the maximum
                         smallest_distance = inf
+                # if this turbine's priority os not the maximum, skip
                 if priority < max_priority:
                     continue
+                # calculate the distance from the drone to this turbine
                 x_diff = pow(self.pos[0] - windmill.pos[0], 2)
                 y_diff = pow(self.pos[1] - windmill.pos[1], 2)
-                diff = x_diff + y_diff
-                distance = sqrt(diff)
+                distance = sqrt(x_diff + y_diff)
+                # if the distance is smaller than smallest distance seen so far
                 if distance < smallest_distance:
+                    # set this distance to the smallest
                     smallest_distance = distance
+                    # and make our current target destination the location of this turbine
                     destination = windmill.pos
+        # head to the next destination
         self.set_move_state((*destination, 0))
     
     def step(self,windfarm:list[Windmill]):
