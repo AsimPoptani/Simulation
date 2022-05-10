@@ -1,6 +1,6 @@
 import math
 
-from config import COASTAL_LOCATION, DRONE_RADIUS
+from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import numpy as np
@@ -39,7 +39,7 @@ class Submersive():
     standard_detection_time=50
 
 
-    def __init__(self,name=None,communication_range=10,detection_range=10,start_pos=(0,0,0), abs_max_velocity=1000, battery_level=1000):
+    def __init__(self, name=None, start_pos=(0, 0, 0)):
         
         # If no name is given, generate  one
         if name is None:
@@ -50,10 +50,11 @@ class Submersive():
             self.name=name
         
         # max velocity
-        self.abs_max_velocity=abs_max_velocity
+        self.abs_max_velocity = DRONE_MAX_VELOCITY
+        self.current_velocity = 0
 
         # Communication range
-        self.communication_range=communication_range
+        self.communication_range = DRONE_MAX_COMMUNICATION_RANGE
 
         # Current position X left Y up Z down
         self.pos=start_pos
@@ -74,7 +75,7 @@ class Submersive():
         self.state_history=[]
 
         # Battery level
-        self.battery_level=battery_level
+        self.battery_level = DRONE_MAX_BATTERY
     
     def detect(self,windmill:Windmill):
         if len(windmill.faults)>0:
@@ -98,7 +99,7 @@ class Submersive():
 
         theta = atan2(diff[1], diff[0])
         distance = sqrt(pow(diff[0], 2) + pow(diff[1], 2))
-        distance = min(distance, self.abs_max_velocity)
+        distance = min(distance, self.current_velocity)
         opp = distance * cos(theta)
         adj = distance * sin(theta)
         # Convert to tuple
@@ -117,10 +118,16 @@ class Submersive():
         max_priority = 0
         for windmill in windfarms:
             if windmill.collision(self.pos[0], self.pos[1], DRONE_RADIUS):
+                print("cRaSh !!")
+                self.set_hold_state()
+                return # this drone is no longer operational
+            elif windmill.safezone(self.pos[0], self.pos[1], DRONE_RADIUS):
                 if windmill.has_fault():
                     windmill.fix_fault()
-                else:
-                    print("cRaSh !!")
+                if self.current_velocity == self.abs_max_velocity:
+                    self.current_velocity /= 4
+            elif self.current_velocity < self.abs_max_velocity and self.state != SubmersiveStates.HOLDSTATE:
+                self.current_velocity = self.abs_max_velocity
             if windmill.has_fault():
                 priority = 0
                 for fault in windmill.faults:
@@ -145,22 +152,24 @@ class Submersive():
 
         if self.new_state==None:
             print("Error: No new state set, setting to hold state")
-            self.new_state=SubmersiveStates.HOLDSTATE
+            self.set_hold_state()
         elif self.new_state==SubmersiveStates.HOLDSTATE:
             # Do nothing
             self.state=SubmersiveStates.HOLDSTATE
+            self.current_velocity = 0
         
         elif self.new_state==SubmersiveStates.MOVESTATE:
             # Check if new position is set
             if self.new_pos is None:
                 print("Error: No new position set, reverting to hold state")
                 self.state=SubmersiveStates.HOLDSTATE
+                self.current_velocity = 0
                 
             else:
+                # Update state
+                self.state = SubmersiveStates.MOVESTATE
                 # Move to new position
                 self.move(self.new_pos)
-                # Update state
-                self.state=SubmersiveStates.MOVESTATE
             
         elif self.new_state==SubmersiveStates.DETECTSTATE:
             # Check for nearby windmills in range
@@ -174,6 +183,7 @@ class Submersive():
             if not windmill_detected:
                 print("Error: No windmill detected, reverting to hold state")
                 self.state=SubmersiveStates.HOLDSTATE
+                self.current_velocity = 0
         
         # Add to history
         self.state_history.append(self.state)
@@ -187,10 +197,11 @@ class Submersive():
         # Check if destination is the same as position
         if self.pos==destination:
             print("Error: Destination is the same as current position, reverting to hold state")
-            self.new_state=SubmersiveStates.HOLDSTATE
+            self.set_hold_state()
             return
         self.new_state=SubmersiveStates.MOVESTATE
         self.new_pos=destination
+        self.current_velocity = self.abs_max_velocity
     
     def set_detect_state(self):
         self.new_state=SubmersiveStates.DETECTSTATE
@@ -229,7 +240,6 @@ class SubmersiveSprite(pygame.sprite.Sprite):
         elif self.submersive.state==SubmersiveStates.DETECTSTATE:
             self.image = pygame.image.load('./sprites/subgreen.png')
         # Merge the text with the sprite put the text above the sprite
-        
 
         return self.image
         # return 
