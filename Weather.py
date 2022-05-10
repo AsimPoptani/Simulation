@@ -1,15 +1,12 @@
 import numpy as np
-import random
-from config import ROTOR_RADIUS, MAX_POWER
+from config import ROTOR_RADIUS, MAX_POWER, AIR_DENSITY, TURBINE_HEIGHT
 
 # Horsea wind speed data from https://power.larc.nasa.gov/data-access-viewer/
 path = open('./hornsea-ws-wd.csv')
 array = np.loadtxt(path, delimiter=",", dtype='float', skiprows=11)
 array = array[:,1:]
-# Air density at sea level
-AIR_DENSITY = 1.225
-# Power efficiency. Cant be greater than 0.59. Around 0.35-0.45 for most turbines. Need research on hornsea turbines to find proper value
-# to do - Power coeffecient not actually static - changes with tip speed ratio
+
+# Power efficiency. Cant be greater than 0.59. Around 0.35-0.45 for most turbines.
 POWER_COEFFICIENT = 0.4
 
 # Gets wind speed and direction (speed, direction) for a given month,day,hour
@@ -30,8 +27,8 @@ class Datagen():
 
     # Account for noise / slight variations in speed across wind turbines. Returns an updated wind speed in m/s and direction
     def update(self):
-        self.speedu = round(self.speed * random.uniform(0.98,1.02),2)
-        self.directionu = round(self.direction * random.uniform(0.98,1.02),2)
+        self.speedu = round(self.speed * np.random.uniform(0.98,1.02),2)
+        self.directionu = round(self.direction * np.random.uniform(0.98,1.02),2)
         return self.speedu, self.directionu
 
     # call update_hour only after get_speed. Updates the widn speed and direction by an hour when called. If get_speed is not called then default is the 1/1 hour 0
@@ -45,20 +42,21 @@ class Datagen():
 
     # get power in Watts calculated from the wind speed. https://www.raeng.org.uk/publications/other/23-wind-turbine
     def get_power(self, windspeed):
+        if windspeed > 25 or windspeed <= 3:
+            power = 0
+            return power
         area = np.pi * (ROTOR_RADIUS**2)
         power = round((0.5 * AIR_DENSITY * area * (windspeed**3) * POWER_COEFFICIENT),2)
         power = min(power, MAX_POWER)
         return power
 
-    # To do - get vibrations according to wind speed, turbine height, angle of blade, rpm, f = N/60 where N is rpm
-    # A very loose model for modelling vibrations
+    # Model Vibrations based on https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7957485/
+    # Gets the vibrations in m/s^2 (acceleration)
     def get_vibrations(self, windspeed):
-        #https://www.intechopen.com/chapters/57948 two main parts contribute to turbine vibrations, rotor and Post
-        #https://reliabilityweb.com/articles/entry/vibration_analysis_of_wind_turbines
-        #calculate the post vibration
-        post_vibration = windspeed #* height / 100
-        # assuming rotor vibration is a function of speed from the rotor speed (needs updating)
-
-        rotor_vibration = windspeed ** 2
-        total_vibration = round(post_vibration + rotor_vibration,2)
-        return total_vibration
+        # If rotor isn't moving when above and below ceratin wind speeds it doesn't include rotor vibrations in calculation
+        # If wind turbine has a fault should increase the vibrations based on the faults using data in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7957485/
+        if windspeed > 25 or windspeed <= 3:
+            vibrations = round((windspeed * TURBINE_HEIGHT) / 100000,6)
+            return vibrations
+        vibrations = round(((windspeed ** 2) * TURBINE_HEIGHT) / 100000, 6)
+        return vibrations

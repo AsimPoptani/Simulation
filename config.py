@@ -19,7 +19,10 @@ DIRECTION_OF_WINDFARM = math.radians( 45 )
 # Width of the turbines
 ROTOR_DIAMETER = 154 
 ROTOR_RADIUS = ROTOR_DIAMETER // 2
+TURBINE_HEIGHT = 190
+
 MAX_POWER = 7000000
+AIR_DENSITY = 1.225 # At sea level
 
 # TODO fix these values
 DRONE_MAX_VELOCITY = 1000
