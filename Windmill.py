@@ -136,7 +136,7 @@ class WindmillSprite(pygame.sprite.Sprite):
             x = 2
             for fault in self.windmill.faults:
                 # Get colour from fault table
-                hue_diff = 359 / len(FAULTS)
+                hue_diff = 1.0 / len(FAULTS)
                 hue = fault["id"] * hue_diff
                 colour = hsv_to_rgb(hue, 1, 1)
                 colour = tuple(map(lambda x: round(x * 255), colour))

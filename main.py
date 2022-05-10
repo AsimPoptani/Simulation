@@ -106,7 +106,7 @@ while running:
     pygame.draw.rect(screen, (0,0,0), pygame.Rect((WIDTH-box_size[0], HEIGHT-box_size[1]), box_size), width=2)
     dot_pos = 0
     for fault in FAULTS:
-        hue_diff = 359 / len(FAULTS)
+        hue_diff = 1.0 / len(FAULTS)
         hue = fault["id"] * hue_diff
         colour = hsv_to_rgb(hue, 1, 1)
         colour = tuple(map(lambda x: round(x * 255), colour))
