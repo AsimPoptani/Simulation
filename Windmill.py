@@ -159,6 +159,18 @@ class WindmillSprite(pygame.sprite.Sprite):
                 self.vis_sprite = 0
             self.image = self.sprites[int(self.vis_sprite)]
     
+    def getBattery(self):
+        if self.windmill.data["Power"] > 5600000:
+            return pygame.image.load('./sprites/arrow-4.png')
+        elif self.windmill.data["Power"] > 4200000:
+            return pygame.image.load('./sprites/arrow-3.png')
+        elif self.windmill.data["Power"] > 2800000:
+            return pygame.image.load('./sprites/arrow-2.png')
+        elif self.windmill.data["Power"] > 1400000:
+            return pygame.image.load('./sprites/arrow-1.png')
+        else:
+            return pygame.image.load('./sprites/arrow-empty.png')
+
     def getPosition(self):
         x = x_to_pixels(self.windmill.pos[0])
         y = y_to_pixels(self.windmill.pos[1])

@@ -84,12 +84,15 @@ while running:
         toBlit=sprite.getSprite()
         position=sprite.getPosition()
         name=sprite.getName()
+        battery = sprite.getBattery()
         #Update sprite for animation
         sprite.update()
         
         name_pos=position[0]-name.get_width(),position[1]-10
         screen.blit(name,name_pos)
         screen.blit(toBlit,position)
+        battery_pos = position[0]-battery.get_width(),position[1]
+        screen.blit(battery,battery_pos)
 
     submersive.step(windfarms)
 

@@ -246,7 +246,18 @@ class SubmersiveSprite(pygame.sprite.Sprite):
 
         return self.image
         # return 
-    
+    def getBattery(self):
+        if self.submersive.battery_level > (100 + 75) / 2:
+            return pygame.image.load('./sprites/battery-100.png')
+        elif self.submersive.battery_level > (75 + 50) / 2:
+            return pygame.image.load('./sprites/battery-75.png')
+        elif self.submersive.battery_level > (50 + 25) / 2:
+            return pygame.image.load('./sprites/battery-50.png')
+        elif self.submersive.battery_level > 25 / 2:
+            return pygame.image.load('./sprites/battery-25.png')
+        else:
+            return pygame.image.load('./sprites/battery-0.png')
+
     def getPosition(self):
         x = x_to_pixels(self.submersive.pos[0])
         y = y_to_pixels(self.submersive.pos[1])
