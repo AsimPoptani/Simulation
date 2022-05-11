@@ -14,6 +14,10 @@ def get_highest_priority_for_windmill(windmill):
     return priority
 
 
+def distance(x1, y1, x2, y2):
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
+
+
 class ControlRoom:
 
     def __init__(self, vehicle, windfarm: list[Windmill]):
@@ -32,33 +36,15 @@ class ControlRoom:
     def scan_farm(self):
         # Where we are going to
         destination = None
-        # Maximum distance to travel
-        smallest_distance = inf
-        # Biggest fault
-        max_priority = 0
-        for windmill in self.get_windmills_with_faults():
-            # otherwise, if this turbine has a fault
-            # the maximum priority for this turbine
-            priority = get_highest_priority_for_windmill(windmill)
-            # if this fault has a higher priority than any other fault for all turbines seen so fa
-            if priority > max_priority:
-                # set the maximum priority for all turbines to this fault's priority
-                max_priority = priority
-                # and reset the smallest distance to the maximum
-                smallest_distance = inf
-            # if this turbine's priority is not the maximum, skip
-            if priority < max_priority:
-                continue
-            # calculate the distance from the drone to this turbine
-            x_diff = pow(self.vehicle.pos[0] - windmill.pos[0], 2)
-            y_diff = pow(self.vehicle.pos[1] - windmill.pos[1], 2)
-            distance = sqrt(x_diff + y_diff)
-            # if the distance is smaller than smallest distance seen so far
-            if distance < smallest_distance:
-                # set this distance to the smallest
-                smallest_distance = distance
-                # and make our current target destination the location of this turbine
-                destination = windmill
+        windmills = self.get_windmills_with_faults()
+        if len(windmills) > 1:
+            # sort by distance from the vehicle
+            windmills.sort(key=lambda x: distance(self.vehicle.pos[0], x.pos[0], self.vehicle.pos[1], x.pos[1]))
+            # sort by fault priority
+            windmills.sort(key=lambda x: get_highest_priority_for_windmill(x), reverse=True)
+        # choose the windmill closest to the vehicle with the highest fault priority
+        if len(windmills) > 0:
+            destination = windmills[0]
         # head to the next destination
         if destination != self.destination:
             self.destination = destination
