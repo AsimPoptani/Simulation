@@ -26,17 +26,10 @@ class ControlRoom:
         self.destination = None
         self.pos = COASTAL_LOCATION
 
-    def get_windmills_with_faults(self):
-        windmills = []
-        for windmill in self.windfarm:
-            if windmill.has_fault():
-                windmills.append(windmill)
-        return windmills
-
     def scan_farm(self):
         # Where we are going to
         destination = None
-        windmills = self.get_windmills_with_faults()
+        windmills = list(filter(lambda x: x.has_fault(), self.windfarm))
         if len(windmills) > 1:
             # sort by distance from the vehicle
             windmills.sort(key=lambda x: distance(self.vehicle.pos[0], x.pos[0], self.vehicle.pos[1], x.pos[1]))
