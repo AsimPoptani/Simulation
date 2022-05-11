@@ -43,8 +43,7 @@ class Windmill():
             self.name = name
     
     def step(self):
-        # TODO add update data here
-        # 
+        self.update_data()
         # Only one fault can happen per step
         for fault in self.potential_faults:
             # Looping daily rate

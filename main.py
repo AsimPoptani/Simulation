@@ -98,8 +98,6 @@ while running:
 
     for windmill in windfarms:
         windmill.step()
-        # TODO this needs to be removed
-        windmill.update_data()
 
     # Create legend
     box_size = (int(WIDTH/5), int(HEIGHT/3))
