@@ -84,7 +84,7 @@ while running:
         toBlit=sprite.getSprite()
         position=sprite.getPosition()
         name=sprite.getName()
-        battery = sprite.getBattery()
+        battery = sprite.getPower()
         #Update sprite for animation
         sprite.update()
         

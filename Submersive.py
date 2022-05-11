@@ -2,6 +2,7 @@
 from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
+import Sprite
 import numpy as np
 from enum import Enum
 import pygame
@@ -220,39 +221,28 @@ class Submersive():
     def __repr__(self) -> str:
         str(self)
 
-            
+class SubmersiveSprite(Sprite.Sprite):
 
-def set_text(string, coordx, coordy, fontSize): #Function to set text
-    font = pygame.font.Font('freesansbold.ttf', fontSize) 
-    #(0, 0, 0) is black, to make black text
-    text = font.render(string, True, (0, 0, 0)) 
-    textRect = text.get_rect()
-    textRect.center = (coordx, coordy) 
-    return (text, textRect)                  
-
-
-
-class SubmersiveSprite(pygame.sprite.Sprite):
-    def __init__(self,submersive:Submersive):
-        super(SubmersiveSprite,self).__init__()
+    def __init__(self, submersive: Submersive):
+        super(SubmersiveSprite, self).__init__()
         # Add sprite
         # TODO update image to a new image
         self.image = pygame.image.load('./sprites/subblack.png')
         self.rect = self.image.get_rect()
-        self.submersive=submersive
-    
+        self.submersive = submersive
+
     def getSprite(self):
-        if self.submersive.state==SubmersiveStates.HOLDSTATE:
+        if self.submersive.state == SubmersiveStates.HOLDSTATE:
             self.image = pygame.image.load('./sprites/subblack.png')
-        elif self.submersive.state==SubmersiveStates.MOVESTATE:
+        elif self.submersive.state == SubmersiveStates.MOVESTATE:
             self.image = pygame.image.load('./sprites/subred.png')
-        elif self.submersive.state==SubmersiveStates.DETECTSTATE:
+        elif self.submersive.state == SubmersiveStates.DETECTSTATE:
             self.image = pygame.image.load('./sprites/subgreen.png')
         # Merge the text with the sprite put the text above the sprite
 
         return self.image
-        # return 
-    def getBattery(self):
+
+    def getPower(self):
         if self.submersive.battery_level > (100 + 75) / 2:
             return pygame.image.load('./sprites/battery-100.png')
         elif self.submersive.battery_level > (75 + 50) / 2:
@@ -268,11 +258,11 @@ class SubmersiveSprite(pygame.sprite.Sprite):
         x = x_to_pixels(self.submersive.pos[0])
         y = y_to_pixels(self.submersive.pos[1])
         return x, y
-    
+
     def getName(self):
-        text=set_text(self.submersive.name,0,0,10)[0]
+        text = self.set_text(self.submersive.name, 0, 0, 10)[0]
         return text
-    
+
     def debug(self):
-        text=set_text(str(self.submersive),0,0,10)[0]
+        text = self.set_text(str(self.submersive), 0, 0, 10)[0]
         return text
