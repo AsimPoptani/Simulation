@@ -1,25 +1,14 @@
+from States import VehicleStates
 from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
 import numpy as np
-from enum import Enum
 import pygame
 from math import inf, sqrt, pow, atan2, sin, cos
 
 
-class SubmersiveStates(Enum):
-    # Move state - Will move to a location
-    MOVESTATE = 0
-    # Detect state - Will inspect a windmill
-    DETECTSTATE = 1
-    # Hold state - Will hold the current location
-    HOLDSTATE = 2
-    # Return state - will return to launch location
-    RETURNSTATE = 3
-
-
-class Submersive():
+class Submersive:
 
     # ID
     Submersive_num = 0
@@ -43,7 +32,7 @@ class Submersive():
         # History of positions
         self.pos_history = []
         # Current state
-        self.state = SubmersiveStates.HOLDSTATE
+        self.state = VehicleStates.HOLDSTATE
         # New state
         self.new_state = None
         # New position
@@ -92,22 +81,22 @@ class Submersive():
             # And clear the new state
             self.new_state = None
 
-        if self.state == SubmersiveStates.HOLDSTATE:
+        if self.state == VehicleStates.HOLDSTATE:
             # Do nothing
             pass
-        elif self.state == SubmersiveStates.MOVESTATE:
+        elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if self.target.collision(self.pos[0], self.pos[1], DRONE_RADIUS):
                     self.set_detect_state()
                 else:
                     self.move(self.target.pos[:2])
-        elif self.state == SubmersiveStates.DETECTSTATE:
+        elif self.state == VehicleStates.DETECTSTATE:
             if self.target.has_fault():
                 self.detect()
             else:
                 self.target = None
                 self.set_return_state()
-        elif self.state == SubmersiveStates.RETURNSTATE:
+        elif self.state == VehicleStates.RETURNSTATE:
             if self.pos[:2] != COASTAL_LOCATION:
                 self.move(COASTAL_LOCATION)
             else:
@@ -119,18 +108,18 @@ class Submersive():
             self.set_move_state()
 
     def set_hold_state(self):
-        self.new_state = SubmersiveStates.HOLDSTATE
+        self.new_state = VehicleStates.HOLDSTATE
 
     def set_move_state(self):
-        self.new_state = SubmersiveStates.MOVESTATE
+        self.new_state = VehicleStates.MOVESTATE
 
     def set_detect_state(self):
-        self.new_state = SubmersiveStates.DETECTSTATE
+        self.new_state = VehicleStates.DETECTSTATE
         for fault in self.target.faults:
             self.detection_time += fault["timeToDetect"]
 
     def set_return_state(self):
-        self.new_state = SubmersiveStates.RETURNSTATE
+        self.new_state = VehicleStates.RETURNSTATE
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
@@ -150,13 +139,13 @@ class SubmersiveSprite(Sprite.Sprite):
         self.submersive = submersive
 
     def getSprite(self):
-        if self.submersive.state == SubmersiveStates.HOLDSTATE:
+        if self.submersive.state == VehicleStates.HOLDSTATE:
             self.image = pygame.image.load('./sprites/subblack.png')
-        elif self.submersive.state == SubmersiveStates.MOVESTATE:
+        elif self.submersive.state == VehicleStates.MOVESTATE:
             self.image = pygame.image.load('./sprites/subred.png')
-        elif self.submersive.state == SubmersiveStates.DETECTSTATE:
+        elif self.submersive.state == VehicleStates.DETECTSTATE:
             self.image = pygame.image.load('./sprites/subgreen.png')
-        elif self.submersive.state == SubmersiveStates.RETURNSTATE:
+        elif self.submersive.state == VehicleStates.RETURNSTATE:
             self.image = pygame.image.load('./sprites/subred.png')
         # Merge the text with the sprite put the text above the sprite
 
