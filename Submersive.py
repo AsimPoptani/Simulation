@@ -13,6 +13,7 @@ class Submersive(Vehicle):
 
     def __init__(self, name=None, start_pos=(0, 0, 0)):
 
+        # initialise inherited values
         super(Submersive, self).__init__()
 
         # If no name is given, generate  one
@@ -42,12 +43,7 @@ class Submersive(Vehicle):
             self.target.faults = []
 
     def step(self):
-        if self.new_state is not None and self.new_state != self.state:
-            self.state = self.new_state
-            # Add to history
-            self.state_history.append(self.state)
-            # And clear the new state
-            self.new_state = None
+        super().step()
 
         if self.state == VehicleStates.HOLDSTATE:
             # Do nothing
@@ -82,9 +78,6 @@ class Submersive(Vehicle):
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
-
-    def __repr__(self) -> str:
-        str(self)
 
 
 class SubmersiveSprite(Sprite.Sprite):

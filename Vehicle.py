@@ -1,4 +1,4 @@
-from math import atan2, sqrt, cos, sin
+from math import atan2, sqrt, cos, sin, pow
 
 import numpy as np
 
@@ -18,7 +18,13 @@ class VehicleStates(Enum):
 
 class Vehicle:
 
+    # ID
+    Vehicle_num = 0
+
     def __init__(self):
+        # set a default name
+        self.name = "Vehicle_" + str(Vehicle.Vehicle_num)
+        Vehicle.Vehicle_num += 1
         # max velocity
         self.abs_max_velocity = 0
         # Communication range
@@ -49,7 +55,12 @@ class Vehicle:
         self.new_state = VehicleStates.RETURNSTATE
 
     def step(self):
-        pass
+        if self.new_state is not None and self.new_state != self.state:
+            self.state = self.new_state
+            # Add to history
+            self.state_history.append(self.state)
+            # And clear the new state
+            self.new_state = None
 
     def move(self, destination):
         # Get current position
@@ -72,3 +83,6 @@ class Vehicle:
         self.pos = new_pos
         # If new position is the same as destination then return true
         return self.pos == destination
+
+    def __repr__(self) -> str:
+        str(self)
