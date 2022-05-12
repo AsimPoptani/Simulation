@@ -16,6 +16,7 @@ locations = []
 
 # code to generate positions
 for j in range(N_WINDMILLS_Y):
+    places = []
     for i in range(N_WINDMILLS_X):
 
         if j == 0 and i >= 4:
@@ -45,4 +46,8 @@ for j in range(N_WINDMILLS_Y):
 
         x = start_x + i * x_space
         y = start_y + j * y_space
-        locations.append((x, y))
+        places.append((x, y))
+    if j % 2 == 1:
+        places.reverse()
+    for place in places:
+        locations.append(place)
