@@ -29,6 +29,7 @@ class ControlRoom:
     def scan_farm(self):
         # Where we are going to
         destination = None
+        # select only those turbines that have faults
         windmills = list(filter(lambda x: x.has_fault(), self.windfarm))
         if len(windmills) > 1:
             # sort by distance from the vehicle
