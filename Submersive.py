@@ -1,5 +1,6 @@
 
 from Vehicle import Vehicle, VehicleStates
+from Windmill import Windmill
 from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
 import Sprite
@@ -32,8 +33,7 @@ class Submersive(Vehicle):
         self.pos = start_pos
         # Battery level
         self.fuel_level = DRONE_MAX_BATTERY
-        #
-        self.target = None
+        # Time remaining to perform inspection
         self.detection_time = 0
 
     def detect(self):
@@ -59,17 +59,12 @@ class Submersive(Vehicle):
                 self.detect()
             else:
                 self.target = None
-                self.set_return_state()
+                self.next_target()
         elif self.state == VehicleStates.RETURNSTATE:
             if self.pos[:2] != COASTAL_LOCATION:
                 self.move(COASTAL_LOCATION)
             else:
                 self.set_hold_state()
-
-    def set_target(self, destination):
-        if destination is not None:
-            self.target = destination
-            self.set_move_state()
 
     def set_detect_state(self):
         super().set_detect_state()

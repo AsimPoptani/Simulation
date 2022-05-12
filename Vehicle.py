@@ -4,6 +4,8 @@ import numpy as np
 
 from enum import Enum
 
+from Windmill import Windmill
+
 
 class VehicleStates(Enum):
     # Move state - Will move to a location
@@ -41,6 +43,10 @@ class Vehicle:
         self.state_history = []
         # Fuel level
         self.fuel_level = 0
+        # Current destination
+        self.target = None
+        # Ordered list of destinations
+        self.targets = []
 
     def set_hold_state(self):
         self.new_state = VehicleStates.HOLDSTATE
@@ -83,6 +89,24 @@ class Vehicle:
         self.pos = new_pos
         # If new position is the same as destination then return true
         return self.pos == destination
+
+    def set_target(self, destination):
+        if destination is not None:
+            self.target = destination
+            self.set_move_state()
+
+    def set_targets(self, targets: [Windmill]):
+        if targets is not None:
+            self.targets = targets
+            self.next_target()
+
+    def next_target(self):
+        if len(self.targets) > 0:
+            target = self.targets[0]
+            self.targets = self.targets[1:]
+            self.set_target(target)
+        else:
+            self.set_return_state()
 
     def __repr__(self) -> str:
         str(self)

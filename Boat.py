@@ -18,7 +18,7 @@
 # Recieve drone
 # Charge drone
 from Vehicle import VehicleStates, Vehicle
-from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL
+from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -58,11 +58,20 @@ class Boat(Vehicle):
         if self.state == VehicleStates.HOLDSTATE:
             pass
         elif self.state == VehicleStates.MOVESTATE:
-            pass
+            if self.target is not None:
+                if self.target.collision(self.pos[0], self.pos[1], BOAT_RADIUS):
+                    self.target = None
+                    self.next_target()
+                else:
+                    self.move(self.target.pos[:2])
         elif self.state == VehicleStates.DETECTSTATE:
-            pass
+            # Boat doesn't do detection
+            print('Error', u"shouldn't be in detect state ¯\\_(ツ)_/¯")
         elif self.state == VehicleStates.RETURNSTATE:
-            pass
+            if self.pos[:2] != COASTAL_LOCATION:
+                self.move(COASTAL_LOCATION)
+            else:
+                self.set_hold_state()
 
     def __str__(self) -> str:
         return f"Boat: {self.name} \n {self.pos} with state {self.state}"
@@ -79,8 +88,14 @@ class BoatSprite(Sprite.Sprite):
         self.boat = boat
 
     def getSprite(self):
-        self.image = pygame.image.load('./sprites/subgreen.png')
-        # Merge the text with the sprite put the text above the sprite
+        if self.boat.state == VehicleStates.HOLDSTATE:
+            self.image = pygame.image.load('./sprites/boat-black.png')
+        elif self.boat.state == VehicleStates.MOVESTATE:
+            self.image = pygame.image.load('./sprites/boat-red.png')
+        elif self.boat.state == VehicleStates.DETECTSTATE:
+            self.image = pygame.image.load('./sprites/boat-green.png')
+        elif self.boat.state == VehicleStates.RETURNSTATE:
+            self.image = pygame.image.load('./sprites/boat-red.png')
         return self.image
 
     def getPower(self):
