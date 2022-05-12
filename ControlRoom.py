@@ -33,7 +33,7 @@ class ControlRoom:
         windmills = list(filter(lambda x: x.has_fault(), self.windfarm))
         if len(windmills) > 1:
             # sort by distance from the vehicle
-            windmills.sort(key=lambda x: distance(self.vehicle.pos[0], x.pos[0], self.vehicle.pos[1], x.pos[1]))
+            windmills.sort(key=lambda x: distance(self.vehicle.pos[0], self.vehicle.pos[1], x.pos[0], x.pos[1]))
             # sort by fault priority
             windmills.sort(key=lambda x: get_highest_priority_for_windmill(x), reverse=True)
         # choose the windmill closest to the vehicle with the highest fault priority
