@@ -96,7 +96,7 @@ class Vehicle:
             self.set_move_state()
 
     def set_targets(self, targets: [Windmill]):
-        if targets is not None:
+        if targets is not None and len(targets) > 0:
             self.targets = targets
             self.next_target()
 

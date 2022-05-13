@@ -39,11 +39,13 @@ DRONE_RADIUS = 1
 DRONE_SAFE_ZONE = 2
 
 # meters
-BOAT_RADIUS = 17.3
+BOAT_RADIUS = 84
 #
 BOAT_MAX_FUEL = 1000
 # meters per tick
-BOAT_MAX_VELOCITY = 50 * 1000
+BOAT_MAX_VELOCITY = 20 * 1000
+# number of drones per boat
+BOAT_N_DRONES = 2
 
 # ticks
 DATA_UPDATE_INTERVAL = 20
