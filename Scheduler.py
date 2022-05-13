@@ -230,8 +230,18 @@ class DronesScheduler():
             self.drone_fuel.append(drone_fuel)
         
     def _on_boat_constraint(self):
-        # If on the the drone moves to the next position the boat goes to
-        pass
+        # If on the boat the drone moves to the next position the boat goes to
+        for drone in range(self._num_drones):
+            for time in range(self._horizon-1):
+                # bool x and y
+                x_bool=self._model.NewBoolVar('x_bool_boat_'+str(drone)+'_'+str(time))
+                y_bool=self._model.NewBoolVar('y_bool_boat_'+str(drone)+'_'+str(time))
+                # Next position is the next boat position
+                self._model.Add(self.drone_positions[drone][time+1][0]==self._boat_path[time+1][0]).OnlyEnforceIf(x_bool)
+                self._model.Add(self.drone_positions[drone][time+1][1]==self._boat_path[time+1][1]).OnlyEnforceIf(y_bool)
+                self._model.AddBoolAnd([x_bool,y_bool]).OnlyEnforceIf(self.drone_boat[drone][time])
+                
+
 
     def _fuel_constraint(self):
         # If on the boat the drone can charge up to the max fuel
@@ -248,8 +258,10 @@ class DronesScheduler():
                 self._model.Add(self.drone_fuel[drone][time+1]==self.drone_fuel[drone][time]-self._discharge_rate).OnlyEnforceIf(self.drone_boat[drone][time].Not())
 
     def _on_boat_before_coast(self):
-        # The drone must be on the boat before the coast
-        pass
+        # The drone must be on the boat before the horizon
+        for drone in range(self._num_drones):
+
+            pass
 
     def _max_speed(self):
         # The drone cannot move faster than the max speed
@@ -271,7 +283,6 @@ class DronesScheduler():
     def setup(self):
         # Init the drone positions
         self._init_drones()
-        print(self.drone_boat)
         # Set max speed
         self._max_speed()
         # Set on boat constraint
@@ -346,8 +357,8 @@ boat_path=[]
 for time in range(horizon):
     boat_path.append((solver.Value(boat._x_pos[time]),solver.Value(boat._y_pos[time])))
 
-
+print(boat_path)
 
 drone_scheduler=DronesScheduler(num_drones=1,windmills=windmills,boat_path=boat_path,index_priority_windmills=index_of_faulty_windmills,max_distance_from_boat=10,fuel=10,max_fuel=10,charge_rate=1,discharge_rate=2)
 drone_scheduler.setup()
-print(drone_scheduler.drone_positions)
+print(drone_scheduler._model)
