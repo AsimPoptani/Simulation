@@ -177,7 +177,113 @@ class BoatScheduler:
         
             
 
+class DronesScheduler():
+    def __init__(self,num_drones:int,windmills:list,boat_path:list,index_priority_windmills:list,max_distance_from_boat:int,fuel:int,max_fuel:int,charge_rate:int,discharge_rate:int):
+        self._num_drones=num_drones
+        self._fuel=fuel
+        self._windmills=windmills
+        self._boat_path=boat_path
+        self._charge_rate=charge_rate
+        self._discharge_rate=discharge_rate
+        self._index_priority_windmills=index_priority_windmills
+        self._max_distance_from_boat=max_distance_from_boat
+        self._max_fuel=max_fuel
+        self._model=cp_model.CpModel()
+        self._horizon=len(self._boat_path)
+        # 2D array of drones vs horizon representing the position of the drone [(x,y),(x,y),...]
+        self.drone_positions=[]
+        # 2D array of drones vs horizon representing if the drone is on the boat
+        self.drone_boat=[]
+        # 2D array of drones vs horizon with fuel
+        self.drone_fuel=[]
+        # 2D array of drones vs horizon with the distance from the boat
+        self.drone_distance_from_boat=[]
 
+    def _init_drones(self):    
+        # Create a 2D array of drones vs horizon representing the position of the drone [(x,y),(x,y),...]
+        for drone in range(self._num_drones):
+            # loop through the horizon
+            drone_positions=[]
+            for time in range(self._horizon):
+                # Create x,y
+                x=self._model.NewIntVar(0,self._max_distance_from_boat,'drone_x'+str(drone)+'_'+str(time))
+                y=self._model.NewIntVar(0,self._max_distance_from_boat,'drone_y'+str(drone)+'_'+str(time))
+                drone_positions.append((x,y))
+            self.drone_positions.append(drone_positions)
+                
+        # Create a 2D array of drones vs horizon representing if the drone is on the boat
+        for drone in range(self._num_drones):
+            # loop through the horizon
+            drone_boat=[]
+            for time in range(self._horizon):
+                # Create bool
+                drone_boat.append(self._model.NewBoolVar('drone_boat'+str(drone)+'_'+str(time)))
+            self.drone_boat.append(drone_boat)
+
+        # Create a 2D array of drones vs horizon with fuel
+        for drone in range(self._num_drones):
+            # loop through the horizon
+            drone_fuel=[]
+            for time in range(self._horizon):
+                # Create fuel
+                drone_fuel.append(self._model.NewIntVar(0,self._max_fuel,'drone_fuel'+str(drone)+'_'+str(time)))
+            self.drone_fuel.append(drone_fuel)
+        
+    def _on_boat_constraint(self):
+        # If on the the drone moves to the next position the boat goes to
+        pass
+
+    def _fuel_constraint(self):
+        # If on the boat the drone can charge up to the max fuel
+        # If max fuel is reached then max fuel is maintained
+        # If not on the boat the drone discharges fuel
+        for drone in range(self._num_drones):
+            for time in range(self._horizon-1):
+                charged=self._model.NewBoolVar('drone_charged'+str(drone)+'_'+str(time))
+                # Charge
+                self._model.Add(self.drone_fuel[drone][time+1]==self.drone_fuel[drone][time]+self._charge_rate).OnlyEnforceIf(self.drone_boat[drone][time]).OnlyEnforceIf(charged.Not())
+                # Max fuel and on the boat
+                self._model.Add(self.drone_fuel[drone][time+1]==self._max_fuel).OnlyEnforceIf(self.drone_boat[drone][time]).OnlyEnforceIf(charged)
+                # Discharge
+                self._model.Add(self.drone_fuel[drone][time+1]==self.drone_fuel[drone][time]-self._discharge_rate).OnlyEnforceIf(self.drone_boat[drone][time].Not())
+
+    def _on_boat_before_coast(self):
+        # The drone must be on the boat before the coast
+        pass
+
+    def _max_speed(self):
+        # The drone cannot move faster than the max speed
+        pass
+
+    def _max_distance_from_boat_constraint(self):
+        # a^2+b^2=c^2
+        # Calculate the distance from drone to boat and put in 
+        pass
+
+    def _reach_broken_windmill(self):
+        # The drones must reach every broken windmills
+        # Only one drone can reach a windmill
+        pass
+
+
+
+
+    def setup(self):
+        # Init the drone positions
+        self._init_drones()
+        print(self.drone_boat)
+        # Set max speed
+        self._max_speed()
+        # Set on boat constraint
+        self._on_boat_constraint()
+        # Set fuel constraint
+        self._fuel_constraint()
+        # Set on boat before coast
+        self._on_boat_before_coast()
+        # Set max distance from boat
+        self._max_distance_from_boat_constraint()
+        # Set reach broken windmill
+        self._reach_broken_windmill()
 
 
 # Run two solvers
@@ -235,7 +341,13 @@ for time in range(horizon):
 
 print(solver.Value(boat._bonus_windmills))
 
+#  x_pos and y_pos into boat_path [(x,y),(x,y),...]
+boat_path=[]
+for time in range(horizon):
+    boat_path.append((solver.Value(boat._x_pos[time]),solver.Value(boat._y_pos[time])))
 
 
 
-
+drone_scheduler=DronesScheduler(num_drones=1,windmills=windmills,boat_path=boat_path,index_priority_windmills=index_of_faulty_windmills,max_distance_from_boat=10,fuel=10,max_fuel=10,charge_rate=1,discharge_rate=2)
+drone_scheduler.setup()
+print(drone_scheduler.drone_positions)
