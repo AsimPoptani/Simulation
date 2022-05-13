@@ -13,6 +13,9 @@ Help()
     echo "-b   Builds venv"
     echo "-r   Runs the simulation"
     echo "-h   Displays this help message"
+    echo "-i   Installs packages"
+    echo "-u   Updates packages"
+    echo "-k   Removes packages"
     echo
 }
 
@@ -77,10 +80,47 @@ Run(){
     python main.py
     
 }
+# Pass the arguments to the function Install
+
+
+Install(){
+    echo "============= Installing packages ============="
+    Check_venv
+    # Print all arguments after the command
+    for i in "$@"
+    do
+        echo "Installing $i"
+        pip install $i
+    done
+    pip freeze > requirements.txt
+
+}
+UpdatePackages(){
+    echo "============= Updating packages ============="
+    Check_venv
+    # Print all arguments after the command
+    for i in "$@"
+    do
+        echo "Updating $i"
+        pip install --upgrade $i
+    done
+    pip freeze > requirements.txt
+}
+
+RemovePackages(){
+    echo "============= Removing packages ============="
+    Check_venv
+    # Print all arguments after the command
+    for i in "$@"
+    do
+        echo "Removing $i"
+        pip uninstall $i
+    done
+    pip freeze > requirements.txt
+}
 
 CheckPython
-while getopts "scbrh:" option; do
-    echo $option
+while getopts "scbrh:i:u:k:" option; do
     case $option in
         h) # display Help
             Help
@@ -97,18 +137,26 @@ while getopts "scbrh:" option; do
         r) # run the simulation
             Run
         exit;;
+        i)
+        # Pass all arguments after the command to the function Install
+            Install "$@"
+        exit;;
+        u)
+        # Pass all arguments after the command to the function UpdatePackages
+            UpdatePackages "$@"
+        exit;;
+        k)
+        # Pass all arguments after the command to the function RemovePackages
+            RemovePackages "$@"
+        exit;;
         
         \?) # incorrect option
             echo "Error: Invalid option"
+            Help
         exit;;
     esac
 done
 
-echo "Hello world!"
+Help
 
 
-# version=$(python -V 2>&1 | grep -Po '(?<=Python )(.+)')
-# if [[ -z "$version" ]]
-# then
-#     echo "Please install Python 3.9.10"
-# fi

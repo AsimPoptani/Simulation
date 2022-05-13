@@ -46,11 +46,11 @@ class Scheduler(cp_model.CpSolverSolutionCallback):
 # 2. With path of base now known lets solve when a drone should be deployed and return
 
 
-horizon=150
+horizon=30
 boatmodel = cp_model.CpModel()
 x_bound,y_bound=10,10
-boat_range=2
-max_boat_speed=1
+boat_range=1
+max_boat_speed=2
 x_pos=[]
 y_pos=[]
 windmills=[]
@@ -59,6 +59,8 @@ num_faulty_windmills=2
 index_of_faulty_windmills=[]
 
 random.seed(1)
+
+###### DATA
 
 # Create windmills randomly
 for i in range(num_windmills):
@@ -78,6 +80,8 @@ for i in range(num_faulty_windmills):
         index=random.randint(0,num_windmills-1)
     index_of_faulty_windmills.append(index)
 
+###### Constraints
+
 # Time, position
 for time in range(horizon):
     # Horizon (x,y)
@@ -89,13 +93,10 @@ for time in range(horizon):
 boatmodel.Add(x_pos[0]==0)
 boatmodel.Add(y_pos[0]==0)
 
+# Must be back at the coast at the last time step
+boatmodel.Add(x_pos[horizon-1]==0)
+boatmodel.Add(y_pos[horizon-1]==0)
 
-x_pos_const=[]
-y_pos_const=[]
-# Loop through windmills and set to Constant
-for i in range(num_windmills):
-    x_pos_const.append(boatmodel.NewConstant(windmills[i][0]))
-    y_pos_const.append(boatmodel.NewConstant(windmills[i][1]))
 
 print(windmills,index_of_faulty_windmills)
 # For every broken windmill
@@ -103,14 +104,37 @@ for i in index_of_faulty_windmills:
     bools=[]
     for time in range(horizon):
         broken_windmill_bool=boatmodel.NewBoolVar('broken_windmill'+str(i)+'_'+str(time))
-        # Todo change so it works on a radius
-        boatmodel.Add(x_pos[time]==windmills[i][0]).OnlyEnforceIf(broken_windmill_bool)
-        boatmodel.Add(y_pos[time]==windmills[i][1]).OnlyEnforceIf(broken_windmill_bool)
+        # X^2 + Y^2 <= radius^2
+        # radius_constraint_x
+        radius_constraint_x=boatmodel.NewIntVar(0,x_bound**2,'radius_constraint_x'+str(i)+'_'+str(time))
+        # radius_constraint_x_diffrence
+        radius_constraint_x_diffrence=boatmodel.NewIntVar(-x_bound,x_bound,'radius_constraint_x_diffrence'+str(i)+'_'+str(time))
+        
+        # radius_constraint_y
+        radius_constraint_y=boatmodel.NewIntVar(0,y_bound**2,'radius_constraint_y'+str(i)+'_'+str(time))
+        # radius_constraint_y_diffrence
+        radius_constraint_y_diffrence=boatmodel.NewIntVar(-y_bound,y_bound,'radius_constraint_y_diffrence'+str(i)+'_'+str(time))
+        
+         #    Calculate the difference between the windmill and the boat
+        #  radius_constraint_x_diffrence=windmill_x - boat_x
+        boatmodel.Add(radius_constraint_x_diffrence==(x_pos[time]-windmills[i][0]))
+
+        # radius_constraint_x=radius_constraint_x_diffrence^2
+        boatmodel.AddMultiplicationEquality(radius_constraint_x,[radius_constraint_x_diffrence,radius_constraint_x_diffrence])
+
+        # radius_constraint_y_diffrence=windmill_y - boat_y
+        boatmodel.Add(radius_constraint_y_diffrence==(y_pos[time]-windmills[i][1]))
+
+        # radius_constraint_y=radius_constraint_y_diffrence^2
+        boatmodel.AddMultiplicationEquality(radius_constraint_y,[radius_constraint_y_diffrence,radius_constraint_y_diffrence])
+
+        # radius_constraint=radius_constraint_x+radius_constraint_y
+        boatmodel.Add(radius_constraint_x+radius_constraint_y<=boat_range**2).OnlyEnforceIf(broken_windmill_bool)
         
 
         bools.append(broken_windmill_bool)
 
-    # TODO change to how many it can reach
+    # We can visit the windmill multiple times but we must visit at least once
     boatmodel.Add(sum(bools)>=1)
 
 bonus_windmills=boatmodel.NewIntVar(0,num_windmills,'bonus_windmills')
@@ -125,9 +149,40 @@ for i in range(num_windmills):
     reached_bools=[]
     for time in range(horizon):
         reached=boatmodel.NewBoolVar('reached_windmill'+str(i)+'_'+str(time))
-        # Todo change so it works on a radius
-        boatmodel.Add(x_pos[time]==windmills[i][0]).OnlyEnforceIf(reached)
-        boatmodel.Add(y_pos[time]==windmills[i][1]).OnlyEnforceIf(reached)
+
+        # X^2 + Y^2 <= radius^2
+        # radius_constraint_x
+        radius_constraint_x=boatmodel.NewIntVar(0,x_bound**2,'radius_reached_constraint_x'+str(i)+'_'+str(time))
+        # radius_constraint_x_diffrence
+        radius_constraint_x_diffrence=boatmodel.NewIntVar(-x_bound,x_bound,'radius_reached_constraint_x_diffrence'+str(i)+'_'+str(time))
+        
+        # radius_constraint_y
+        radius_constraint_y=boatmodel.NewIntVar(0,y_bound**2,'radius_reached_constraint_y'+str(i)+'_'+str(time))
+        # # radius_constraint_y_diffrence
+        radius_constraint_y_diffrence=boatmodel.NewIntVar(-y_bound,y_bound,'radius_reached_constraint_y_diffrence'+str(i)+'_'+str(time))
+        
+         #    Calculate the difference between the windmill and the boat
+        #  radius_constraint_x_diffrence=windmill_x - boat_x
+        boatmodel.Add(radius_constraint_x_diffrence==(x_pos[time]-windmills[i][0]))
+
+        # radius_constraint_x=radius_constraint_x_diffrence^2
+        boatmodel.AddMultiplicationEquality(radius_constraint_x,[radius_constraint_x_diffrence,radius_constraint_x_diffrence])
+
+        # radius_constraint_y_diffrence=windmill_y - boat_y
+        boatmodel.Add(radius_constraint_y_diffrence==(y_pos[time]-windmills[i][1]))
+
+        # radius_constraint_y=radius_constraint_y_diffrence^2
+        boatmodel.AddMultiplicationEquality(radius_constraint_y,[radius_constraint_y_diffrence,radius_constraint_y_diffrence])
+
+        # radius_constraint=radius_constraint_x+radius_constraint_y
+        boatmodel.Add(radius_constraint_x+radius_constraint_y<=boat_range**2).OnlyEnforceIf(reached)
+
+
+
+        
+        # # Todo change so it works on a radius
+        # boatmodel.Add(x_pos[time]==windmills[i][0]).OnlyEnforceIf(reached)
+        # boatmodel.Add(y_pos[time]==windmills[i][1]).OnlyEnforceIf(reached)
         reached_bools.append(reached)
     boatmodel.Add(sum(reached_bools)>=1).OnlyEnforceIf(bonus_bool)
         
@@ -140,11 +195,17 @@ boatmodel.Add(bonus_windmills==sum(bonus_bools))
 for time in range(horizon-1):
     x_max_diff=boatmodel.NewIntVar(0,max_boat_speed,'x_max_diff'+str(time))
     y_max_diff=boatmodel.NewIntVar(0,max_boat_speed,'y_max_diff'+str(time))
+    # a^2+b^2<=c^2
     # Get distance between two points
     boatmodel.AddAbsEquality(x_max_diff,x_pos[time+1]-x_pos[time])
     boatmodel.AddAbsEquality(y_max_diff,y_pos[time+1]-y_pos[time])
+    # Square a and b
+    x_max_squared=boatmodel.NewIntVar(0,max_boat_speed**2,'x_max_squared'+str(time))
+    y_max_squared=boatmodel.NewIntVar(0,max_boat_speed**2,'y_max_squared'+str(time))
+    boatmodel.AddMultiplicationEquality(x_max_squared,[x_max_diff,x_max_diff])
+    boatmodel.AddMultiplicationEquality(y_max_squared,[y_max_diff,y_max_diff])
     # Check if the distance is greater than 5m/s
-    boatmodel.Add(x_max_diff+y_max_diff<=max_boat_speed)
+    boatmodel.Add(x_max_squared+y_max_squared<=max_boat_speed**2)
 
 boatmodel.Maximize(bonus_windmills)
 # print(boatmodel)
