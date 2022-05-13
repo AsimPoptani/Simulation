@@ -70,7 +70,7 @@ while running:
         screen.blit(battery, battery_pos)
 
     destination = control.scan_farm()
-    sub.set_target(destination)
+    sub.set_targets(destination)
     sub.step()
 
     for windmill in windfarms:

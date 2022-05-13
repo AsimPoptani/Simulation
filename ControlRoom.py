@@ -23,12 +23,10 @@ class ControlRoom:
     def __init__(self, vehicle, windfarm: list[Windmill]):
         self.vehicle = vehicle
         self.windfarm = windfarm
-        self.destination = None
+        self.destinations = []
         self.pos = COASTAL_LOCATION
 
     def scan_farm(self):
-        # Where we are going to
-        destination = None
         # select only those turbines that have faults
         windmills = list(filter(lambda x: x.has_fault(), self.windfarm))
         if len(windmills) > 1:
@@ -36,12 +34,11 @@ class ControlRoom:
             windmills.sort(key=lambda x: distance(self.vehicle.pos[0], self.vehicle.pos[1], x.pos[0], x.pos[1]))
             # sort by fault priority
             windmills.sort(key=lambda x: get_highest_priority_for_windmill(x), reverse=True)
-        # choose the windmill closest to the vehicle with the highest fault priority
-        if len(windmills) > 0:
-            destination = windmills[0]
-        # head to the next destination
-        if destination != self.destination:
-            self.destination = destination
+        # check if the destinations have changed
+        if windmills != self.destinations:
+            # if so update the cache
+            self.destinations = windmills
         else:
-            destination = None
-        return destination
+            # else return an empty list
+            windmills = []
+        return windmills
