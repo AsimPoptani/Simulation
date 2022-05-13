@@ -1,6 +1,6 @@
 import random, pygame
 from math import sqrt
-
+import random
 from display import x_to_pixels, y_to_pixels
 from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY, DRONE_SAFE_ZONE
 from Weather import Datagen
@@ -64,7 +64,35 @@ class Windmill():
             self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
             # add vibrational extras check each fault in the faults and then apply a multiplier or noise based on data before updating data
             # Only the larger vibrational data fault takes effect.
-            self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
+            # Change the vibrational data of the turbine based on faults and https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7957485/
+            if len(self.faults) > 0:
+                sortorder = {"generator": 0, "gearbox": 1, "main-shaft": 2, "rotor-bearings": 3, "rotor-hub": 4,
+                "break-system": 5, "cables": 6, "main-frame": 7, "nacelle": 8, "other": 9, "pitch-system": 10,
+                "power-converter": 11, "rotor-blades": 12, "screws": 13, "tower": 14, "transformer": 15, "yaw-system": 16}
+                sortedlist = sorted(self.faults, key=lambda d: sortorder[d["name"]])
+                for fault in sortedlist:
+                    # In order of faults which give the highest vibration to the lowest vibration. 
+                    if fault["name"] == "generator":
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(9,17) * 5 ,6)})
+                        break
+                    elif fault["name"] == "gearbox":
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(2,5) * 5 ,6)})
+                        break
+                    elif fault["name"] == "main-shaft":
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(1.5,4) * 5 ,6)})
+                        break
+                    elif fault["name"] == "rotor-bearings":
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.8,1) * 5 ,6)})
+                        break
+                    elif fault["name"] == "rotor-hub":
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.4,0.8) * 5 ,6)})
+                        break
+                    # No vibrational data information in the paper for the other faults so just some noise for the other faults
+                    else:
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.3,0.7) * 5 ,6)})
+                        break
+            else:
+                self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
         self.timer_counter += 1
 
     def has_fault(self):
@@ -103,13 +131,12 @@ class WindmillSprite(Sprite.Sprite):
         # List of images for animation
         self.play = True
         # Images for animation
-        self.sprites = []
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine1.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine2.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine3.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine4.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine5.png'))
-        self.sprites.append(pygame.image.load('./sprites/wind-turbine6.png'))
+        self.sprites = [pygame.image.load('./sprites/wind-turbine1.png'), 
+        pygame.image.load('./sprites/wind-turbine2.png'),
+        pygame.image.load('./sprites/wind-turbine3.png'),
+        pygame.image.load('./sprites/wind-turbine4.png'),
+        pygame.image.load('./sprites/wind-turbine5.png'),
+        pygame.image.load('./sprites/wind-turbine6.png')]
         # Current image index
         self.vis_sprite = 0
         # Current image
@@ -122,7 +149,6 @@ class WindmillSprite(Sprite.Sprite):
             self.image = pygame.image.load('./sprites/wind-turbine-fault.png')
             # Apply color circles to see the faults move each circle by 5 if there is a circle there
             # TODO change to use the fault color - redone
-            # Also add key legend to show which color is which
             x = 2
             for fault in self.windmill.faults:
                 # Get colour from fault table

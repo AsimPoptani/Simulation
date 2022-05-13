@@ -17,265 +17,99 @@
 # Deploy drone (destinations[],rendevous[])
 # Recieve drone
 # Charge drone
-
-
-from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
+from Vehicle import VehicleStates, Vehicle
+from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
-import numpy as np
-from enum import Enum
+import Sprite
 import pygame
-from math import inf, sqrt, pow, atan2, sin, cos
 
 
-class SubmersiveStates(Enum):
-    MOVESTATE = 0
-    DETECTSTATE = 1
-    HOLDSTATE = 2
-
-class Submersive():
-    # A submersive has sevral states
-
-    #####
-    ### Move state - Will move to a location 
-    ### Detect state - Will detect if a windmill is broken
-    ### Hold state - Will hold the current location
-    ####
-
-    # Move State
-    # For now we assume that it takes one step to move 1m in any direction
-    # TODO - Add Gausian noise to the movement and variable speed
-
-    # Detect State
-    # There is a set number of steps to detect a  broken windmill and is determined by a faults list
-    # There is a deterministic time to detect without any faults lets assume it is 50 steps
-
+class Boat(Vehicle):
 
     # ID 
-    Subersive_num=0
+    Boat_num = 0
 
-    # Standard Detection
-    standard_detection_time=50
+    def __init__(self, name=None, start_pos=(*COASTAL_LOCATION, 0)):
 
+        # initialise inherited values
+        super(Boat, self).__init__()
 
-    def __init__(self, name=None, start_pos=(0, 0, 0)):
-        
         # If no name is given, generate  one
         if name is None:
-            self.name="Submersive_"+str(Submersive.Subersive_num)
-            Submersive.Subersive_num+=1
+            self.name = "Boat_" + str(Boat.Boat_num)
+            Boat.Boat_num += 1
             print(f"No name given, generating {self.name}")
         else:
-            self.name=name
-        
-        # max velocity
-        self.abs_max_velocity = DRONE_MAX_VELOCITY
-        self.current_velocity = 0
+            self.name = name
 
+        # max velocity
+        self.abs_max_velocity = BOAT_MAX_VELOCITY
         # Communication range
         self.communication_range = DRONE_MAX_COMMUNICATION_RANGE
-
         # Current position X left Y up Z down
-        self.pos=start_pos
+        self.pos = start_pos
+        # Fuel level
+        self.fuel_level = BOAT_MAX_FUEL
 
-        # History of positions
-        self.pos_history=[]
+    def step(self):
+        super().step()
 
-        # Current state
-        self.state=SubmersiveStates.HOLDSTATE
-
-        # New state
-        self.new_state=None
-
-        # New position
-        self.new_pos=None
-
-        # History of states
-        self.state_history=[]
-
-        # Battery level
-        self.battery_level = DRONE_MAX_BATTERY
-    
-    def detect(self,windmill:Windmill):
-        if len(windmill.faults)>0:
-            # How long to detect the faults
-            detection_time=0
-            for fault in windmill.faults:
-                detection_time+=fault["timeToDetect"]
-        else:
-            detection_time=Submersive.standard_detection_time
-        
-        return detection_time
-    
-    def move(self,destination):
-        # Get current position
-        current_pos=self.pos
-        # Add to history
-        self.pos_history.append(current_pos)
-
-        # Find the difference between the current position and the destination
-        diff=np.array(destination)-np.array(current_pos)
-
-        theta = atan2(diff[1], diff[0])
-        distance = sqrt(pow(diff[0], 2) + pow(diff[1], 2))
-        distance = min(distance, self.current_velocity)
-        opp = distance * cos(theta)
-        adj = distance * sin(theta)
-        # Convert to tuple
-        new_pos = (current_pos[0] + opp, current_pos[1] + adj, 0)
-
-        # Update the position
-        self.pos=new_pos
-        # If new position is the same as destination then return true
-        if self.pos==destination:
-            return True
-        return False
-
-    def scan_farm(self, windfarms:list[Windmill]):
-        # Where we are going to 
-        destination = COASTAL_LOCATION
-        # Maximum distance to travel
-        smallest_distance = inf
-        # Biggest fault 
-        max_priority = 0
-        for windmill in windfarms:
-            if windmill.collision(self.pos[0], self.pos[1], DRONE_RADIUS):
-                print("cRaSh !!")
-                self.set_hold_state()
-                return # this drone is no longer operational
-            elif windmill.safezone(self.pos[0], self.pos[1], DRONE_RADIUS):
-                if windmill.has_fault():
-                    windmill.fix_fault()
-                if self.current_velocity == self.abs_max_velocity:
-                    self.current_velocity /= 4
-            elif self.current_velocity < self.abs_max_velocity and self.state != SubmersiveStates.HOLDSTATE:
-                self.current_velocity = self.abs_max_velocity
-            if windmill.has_fault():
-                priority = 0
-                for fault in windmill.faults:
-                    if priority < fault["priority"]:
-                        priority = fault["priority"]
-                    if fault["priority"] > max_priority:
-                        max_priority = fault["priority"]
-                        smallest_distance = inf
-                if priority < max_priority:
-                    continue
-                x_diff = pow(self.pos[0] - windmill.pos[0], 2)
-                y_diff = pow(self.pos[1] - windmill.pos[1], 2)
-                diff = x_diff + y_diff
-                distance = sqrt(diff)
-                if distance < smallest_distance:
-                    smallest_distance = distance
-                    destination = windmill.pos
-        self.set_move_state((*destination, 0))
-    
-    def step(self,windfarm:list[Windmill]):
-        self.scan_farm(windfarm)
-
-        if self.new_state==None:
-            print("Error: No new state set, setting to hold state")
-            self.set_hold_state()
-        elif self.new_state==SubmersiveStates.HOLDSTATE:
-            # Do nothing
-            self.state=SubmersiveStates.HOLDSTATE
-            self.current_velocity = 0
-        
-        elif self.new_state==SubmersiveStates.MOVESTATE:
-            # Check if new position is set
-            if self.new_pos is None:
-                print("Error: No new position set, reverting to hold state")
-                self.state=SubmersiveStates.HOLDSTATE
-                self.current_velocity = 0
-                
+        if self.state == VehicleStates.HOLDSTATE:
+            pass
+        elif self.state == VehicleStates.MOVESTATE:
+            if self.target is not None:
+                if self.target.collision(self.pos[0], self.pos[1], BOAT_RADIUS):
+                    self.target = None
+                    self.next_target()
+                else:
+                    self.move(self.target.pos[:2])
+        elif self.state == VehicleStates.DETECTSTATE:
+            # Boat doesn't do detection
+            print('Error', u"shouldn't be in detect state ¯\\_(ツ)_/¯")
+        elif self.state == VehicleStates.RETURNSTATE:
+            if self.pos[:2] != COASTAL_LOCATION:
+                self.move(COASTAL_LOCATION)
             else:
-                # Update state
-                self.state = SubmersiveStates.MOVESTATE
-                # Move to new position
-                self.move(self.new_pos)
-            
-        elif self.new_state==SubmersiveStates.DETECTSTATE:
-            # Check for nearby windmills in range
-            windmill_detected=False
-            for windmill in windfarm:
-                if windmill.position == self.pos:
-                    self.detect(windmill)
-                    windmill_detected=True
-                    self.state=SubmersiveStates.DETECTSTATE
-                    break
-            if not windmill_detected:
-                print("Error: No windmill detected, reverting to hold state")
-                self.state=SubmersiveStates.HOLDSTATE
-                self.current_velocity = 0
-        
-        # Add to history
-        self.state_history.append(self.state)
-        # And clear the new state
-        self.new_state=None
-    
-    def set_hold_state(self):
-        self.new_state=SubmersiveStates.HOLDSTATE
-    
-    def set_move_state(self,destination):
-        # Check if destination is the same as position
-        if self.pos==destination:
-            print("Error: Destination is the same as current position, reverting to hold state")
-            self.set_hold_state()
-            return
-        self.new_state=SubmersiveStates.MOVESTATE
-        self.new_pos=destination
-        self.current_velocity = self.abs_max_velocity
-    
-    def set_detect_state(self):
-        self.new_state=SubmersiveStates.DETECTSTATE
-    
+                self.set_hold_state()
+
     def __str__(self) -> str:
-        return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
-    
-    def __repr__(self) -> str:
-        str(self)
-
-            
-
-def set_text(string, coordx, coordy, fontSize): #Function to set text
-    font = pygame.font.Font('freesansbold.ttf', fontSize) 
-    #(0, 0, 0) is black, to make black text
-    text = font.render(string, True, (0, 0, 0)) 
-    textRect = text.get_rect()
-    textRect.center = (coordx, coordy) 
-    return (text, textRect)                  
+        return f"Boat: {self.name} \n {self.pos} with state {self.state}"
 
 
+class BoatSprite(Sprite.Sprite):
 
-class SubmersiveSprite(pygame.sprite.Sprite):
-    def __init__(self,submersive:Submersive):
-        super(SubmersiveSprite,self).__init__()
+    def __init__(self, boat: Boat):
+        super(BoatSprite, self).__init__()
         # Add sprite
         # TODO update image to a new image
         self.image = pygame.image.load('./sprites/subblack.png')
         self.rect = self.image.get_rect()
-        self.submersive=submersive
-    
-    def getSprite(self):
-        if self.submersive.state==SubmersiveStates.HOLDSTATE:
-            self.image = pygame.image.load('./sprites/subblack.png')
-        elif self.submersive.state==SubmersiveStates.MOVESTATE:
-            self.image = pygame.image.load('./sprites/subred.png')
-        elif self.submersive.state==SubmersiveStates.DETECTSTATE:
-            self.image = pygame.image.load('./sprites/subgreen.png')
-        # Merge the text with the sprite put the text above the sprite
+        self.boat = boat
 
+    def getSprite(self):
+        if self.boat.state == VehicleStates.HOLDSTATE:
+            self.image = pygame.image.load('./sprites/boat-black.png')
+        elif self.boat.state == VehicleStates.MOVESTATE:
+            self.image = pygame.image.load('./sprites/boat-red.png')
+        elif self.boat.state == VehicleStates.DETECTSTATE:
+            self.image = pygame.image.load('./sprites/boat-green.png')
+        elif self.boat.state == VehicleStates.RETURNSTATE:
+            self.image = pygame.image.load('./sprites/boat-red.png')
         return self.image
-        # return 
-    
+
+    def getPower(self):
+        return pygame.image.load('./sprites/battery-100.png')
+
     def getPosition(self):
-        x = x_to_pixels(self.submersive.pos[0])
-        y = y_to_pixels(self.submersive.pos[1])
+        x = x_to_pixels(self.boat.pos[0])
+        y = y_to_pixels(self.boat.pos[1])
         return x, y
-    
+
     def getName(self):
-        text=set_text(self.submersive.name,0,0,10)[0]
+        text = self.set_text(self.boat.name, 0, 0, 10)[0]
         return text
-    
+
     def debug(self):
-        text=set_text(str(self.submersive),0,0,10)[0]
+        text = self.set_text(str(self.boat), 0, 0, 10)[0]
         return text
