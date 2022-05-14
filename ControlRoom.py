@@ -1,7 +1,14 @@
 from math import inf, sqrt
 
+from ortools.sat.python import cp_model
+
+from Scheduler import BoatScheduler
 from Windmill import Windmill
-from config import COASTAL_LOCATION
+from config import COASTAL_LOCATION, BOAT_RADIUS, BOAT_MAX_VELOCITY
+from locations import locations, max_x, max_y
+
+from time import time_ns
+from time_utilities import nanosecond_string
 
 
 def get_highest_priority_for_windmill(windmill):
@@ -71,3 +78,53 @@ class ControlRoom:
         # we only want the first item
         windmills = [windmills[0]]
         return windmills
+
+    def fetch_windmill_positions(self):
+        windmills = []
+        indexes = []
+        for i in range(len(self.windfarm)):
+            windmill = self.windfarm[i]
+            windmills.append(windmill.pos)
+            if windmill.has_fault():
+                indexes.append(i)
+        return tuple(windmills) , tuple(indexes)
+
+    def get_boat_positions(self):
+        boat_path = []
+        horizon = 5000
+        windmills, indexes = self.fetch_windmill_positions()
+        if not windmills or not indexes:
+            return []
+        x_bound = max(max_x + (BOAT_RADIUS * 4), COASTAL_LOCATION[0])
+        y_bound = max(max_y + (BOAT_RADIUS * 4), COASTAL_LOCATION[1])
+        boat_range = round(BOAT_RADIUS * 1.5)
+        boat = BoatScheduler(windmills,
+                                  x_bound,
+                                  y_bound,
+                                  boat_range,
+                                  BOAT_MAX_VELOCITY,
+                                  indexes,
+                                  horizon=horizon,
+                                  return_to_coastal=True,
+                                  start_at_coastal=True,
+                                  coastal=COASTAL_LOCATION
+        )
+
+        timer = time_ns()
+        model = boat.setup_model()
+        solver = cp_model.CpSolver()
+        status = solver.Solve(model)
+        end = time_ns() - timer
+        print(nanosecond_string(end))
+
+        feasible = status == cp_model.FEASIBLE
+        optimal = status == cp_model.OPTIMAL
+        if feasible:
+            print("sub" if not optimal else "", "optimal")
+            #  x_pos and y_pos into boat_path [(x,y),(x,y),...]
+            for time in range(horizon):
+                boat_path.append((solver.Value(boat._x_pos[time]), solver.Value(boat._y_pos[time])))
+        else:
+            print("infeasible")
+
+        return boat_path
