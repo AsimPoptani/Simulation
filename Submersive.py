@@ -3,6 +3,7 @@ from Vehicle import Vehicle, VehicleStates
 from Windmill import Windmill
 from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
+from averaging import Averaging
 import Sprite
 import pygame
 
@@ -12,7 +13,7 @@ class Submersive(Vehicle):
     # ID
     Submersive_num = 0
 
-    def __init__(self, name=None, start_pos=(0, 0, 0)):
+    def __init__(self, windfarm: list[Windmill], name=None, start_pos=(0, 0, 0)):
 
         # initialise inherited values
         super(Submersive, self).__init__()
@@ -35,11 +36,15 @@ class Submersive(Vehicle):
         self.fuel_level = DRONE_MAX_BATTERY
         # Time remaining to perform inspection
         self.detection_time = 0
+        # averaging algorithm performed by drone
+        self.averaging = Averaging(windfarm)
 
     def detect(self):
         if self.detection_time > 0:
             self.detection_time -= 1
         else:
+            # Once inspected give prob of faulty
+            self.target.fault_prob = self.averaging.check_faulty(self.target,5)
             self.target.faults = []
 
     def step(self):
@@ -117,6 +122,10 @@ class SubmersiveSprite(Sprite.Sprite):
 
     def getName(self):
         text = self.set_text(self.submersive.name, 0, 0, 10)[0]
+        return text
+    
+    def getProb(self):
+        text = None
         return text
 
     def debug(self):

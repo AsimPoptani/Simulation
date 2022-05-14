@@ -26,6 +26,8 @@ class Windmill():
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
+        # Store probability of fault after inspection
+        self.fault_prob = 0
         # Data timer
         self.timer_counter = 0
         # Data generated from turbines WindSpeed in m/s, Wind direction in degrees, power in Watts, Vibration in m/s^2 (accerleration)
@@ -194,6 +196,13 @@ class WindmillSprite(Sprite.Sprite):
 
     def getName(self):
         text = self.set_text(self.windmill.name, 0, 0, 10)[0]
+        return text
+
+    # Text for probabilty
+    def getProb(self):
+        text = None
+        if self.windmill.fault_prob > 0:
+            text = self.set_text(str(self.windmill.fault_prob) + "%", 0, 0, 9)[0]
         return text
 
     def debug(self):
