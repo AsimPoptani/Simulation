@@ -47,6 +47,9 @@ class Vehicle:
         self.target = None
         # Ordered list of destinations
         self.targets = []
+        #
+        self.distance_travelled = 0
+        self.hours_at_sea = 0
 
     def set_hold_state(self):
         self.new_state = VehicleStates.HOLDSTATE
@@ -84,6 +87,8 @@ class Vehicle:
         adj = distance * sin(theta)
         # Convert to tuple
         new_pos = (current_pos[0] + opp, current_pos[1] + adj, 0)
+        # update distance travelled
+        self.distance_travelled += distance
 
         # Update the position
         self.pos = new_pos
