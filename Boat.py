@@ -56,19 +56,26 @@ class Boat(Vehicle):
         super().step()
 
         if self.state == VehicleStates.HOLDSTATE:
-            pass
+            if self.distance_travelled != 0:
+                print(self.distance_travelled / 1000, "kilometers")
+                self.distance_travelled = 0
+                print(self.hours_at_sea, "hours")
+                self.hours_at_sea = 0
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if self.target.collision(self.pos[0], self.pos[1], BOAT_RADIUS):
                     self.target = None
                     self.next_target()
+                    self.step()  # nb. recursive call
                 else:
+                    self.hours_at_sea += 1
                     self.move(self.target.pos[:2])
         elif self.state == VehicleStates.DETECTSTATE:
             # Boat doesn't do detection
             print('Error', u"shouldn't be in detect state ¯\\_(ツ)_/¯")
         elif self.state == VehicleStates.RETURNSTATE:
             if self.pos[:2] != COASTAL_LOCATION:
+                self.hours_at_sea += 1
                 self.move(COASTAL_LOCATION)
             else:
                 self.set_hold_state()
