@@ -1,4 +1,4 @@
-from config import N_WINDMILLS_X, N_WINDMILLS_Y
+from config import N_WINDMILLS_X, N_WINDMILLS_Y, MAX_AREA_X, MAX_AREA_Y
 from config import DISTANCE_FROM_SHORE, COASTAL_LOCATION, DIRECTION_OF_WINDFARM
 from config import WINDFARM_WIDTH, WINDFARM_HEIGHT
 from math import sin, cos
@@ -13,6 +13,11 @@ y_space = WINDFARM_HEIGHT // N_WINDMILLS_Y
 
 # the (generated) positions of all the windmills in meters
 locations = []
+
+min_x = MAX_AREA_X
+max_x = 0
+min_y = MAX_AREA_Y
+max_y = 0
 
 # code to generate positions
 for j in range(N_WINDMILLS_Y):
@@ -47,6 +52,16 @@ for j in range(N_WINDMILLS_Y):
         x = start_x + i * x_space
         y = start_y + j * y_space
         places.append((x, y))
+
+        if x < min_x:
+            min_x = x
+        if x > max_x:
+            max_x = x
+        if y < min_y:
+            min_y = y
+        if y > max_y:
+            max_y = y
+
     if j % 2 == 1:
         places.reverse()
     for place in places:
