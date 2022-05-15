@@ -53,15 +53,19 @@ class Vehicle:
 
     def set_hold_state(self):
         self.new_state = VehicleStates.HOLDSTATE
+        self.step()
 
     def set_move_state(self):
         self.new_state = VehicleStates.MOVESTATE
+        self.step()
 
     def set_detect_state(self):
         self.new_state = VehicleStates.DETECTSTATE
+        self.step()
 
     def set_return_state(self):
         self.new_state = VehicleStates.RETURNSTATE
+        self.step()
 
     def step(self):
         if self.new_state is not None and self.new_state != self.state:

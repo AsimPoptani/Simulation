@@ -66,7 +66,6 @@ class Boat(Vehicle):
                 if self.target.collision(self.pos[0], self.pos[1], BOAT_RADIUS):
                     self.target = None
                     self.next_target()
-                    self.step()  # nb. recursive call
                 else:
                     self.hours_at_sea += 1
                     self.move(self.target.pos[:2])
