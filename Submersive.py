@@ -72,9 +72,9 @@ class Submersive(Vehicle):
                 self.set_hold_state()
 
     def set_detect_state(self):
-        super().set_detect_state()
         for fault in self.target.faults:
             self.detection_time += fault["timeToDetect"]
+        super().set_detect_state()
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
