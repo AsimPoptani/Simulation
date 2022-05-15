@@ -13,7 +13,7 @@ class Submersive(Vehicle):
     # ID
     Submersive_num = 0
 
-    def __init__(self, windfarm: list[Windmill], name=None, start_pos=(0, 0, 0)):
+    def __init__(self, windfarm: list[Windmill], adv, name=None, start_pos=(0, 0, 0)):
 
         # initialise inherited values
         super(Submersive, self).__init__()
@@ -38,6 +38,10 @@ class Submersive(Vehicle):
         self.detection_time = 0
         # averaging algorithm performed by drone
         self.averaging = Averaging(windfarm)
+        # the host ADV
+        self.adv = adv
+        # whether this sprite is visible
+        self.hide = True
 
     def detect(self):
         if self.detection_time > 0:
@@ -51,14 +55,11 @@ class Submersive(Vehicle):
         super().step()
 
         if self.state == VehicleStates.HOLDSTATE:
-            # Do nothing
-            pass
+            self.pos = self.adv.pos
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
-                if self.target.collision(self.pos[0], self.pos[1], DRONE_RADIUS):
+                if self.move(self.target.pos[:2], DRONE_RADIUS):
                     self.set_detect_state()
-                else:
-                    self.move(self.target.pos[:2])
         elif self.state == VehicleStates.DETECTSTATE:
             if self.target.has_fault():
                 self.detect()
@@ -66,9 +67,8 @@ class Submersive(Vehicle):
                 self.target = None
                 self.next_target()
         elif self.state == VehicleStates.RETURNSTATE:
-            if self.pos[:2] != COASTAL_LOCATION:
-                self.move(COASTAL_LOCATION)
-            else:
+            if self.move(self.adv.pos[:2], DRONE_RADIUS):
+                self.adv.set_drone_returned(self)
                 self.set_hold_state()
 
     def set_detect_state(self):
@@ -89,8 +89,11 @@ class SubmersiveSprite(Sprite.Sprite):
         self.image = pygame.image.load('./sprites/subblack.png')
         self.rect = self.image.get_rect()
         self.submersive = submersive
+        self.hide = True
 
     def getSprite(self):
+        if self.submersive.hide:
+            return None
         if self.submersive.state == VehicleStates.HOLDSTATE:
             self.image = pygame.image.load('./sprites/subblack.png')
         elif self.submersive.state == VehicleStates.MOVESTATE:

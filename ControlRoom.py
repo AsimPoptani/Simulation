@@ -26,6 +26,17 @@ def distance(x1, y1, x2, y2):
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
 
+def centroid(windmills):
+    accumulator_x, accumulator_y = 0, 0
+    m = len(windmills)
+    for i in range(m):
+        accumulator_x += windmills[i].pos[0]
+        accumulator_y += windmills[i].pos[1]
+    accumulator_x /= m
+    accumulator_y /= m
+    return accumulator_x, accumulator_y
+
+
 class ControlRoom:
 
     def __init__(self, vehicle, windfarm: list[Windmill]):
@@ -79,6 +90,22 @@ class ControlRoom:
         windmills = [windmills[0]]
         return windmills
 
+    def adv_positions(self, n):
+        windmills = self.windfarm.copy()
+        destinations = []
+        while len(windmills) > 0:
+            m = min(n, len(windmills))
+            next_m, windmills = windmills[:m], windmills[m:]
+            accumulator_x, accumulator_y = centroid(next_m)
+            destinations.append((accumulator_x, accumulator_y))
+        return tuple(destinations)
+
+    def nearest_n_targets(self, x, y, n):
+        windmills = self.windfarm.copy()
+        # sort by distance from the vehicle
+        windmills.sort(key=lambda i: distance(x, y, i.pos[0], i.pos[1]))
+        return windmills[:n]
+
     def fetch_windmill_positions(self):
         windmills = []
         indexes = []
@@ -113,6 +140,7 @@ class ControlRoom:
         timer = time_ns()
         model = boat.setup_model()
         solver = cp_model.CpSolver()
+        solver.parameters.max_time_in_seconds = 60.0
         status = solver.Solve(model)
         end = time_ns() - timer
         print(nanosecond_string(end))

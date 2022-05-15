@@ -17,6 +17,8 @@
 # Deploy drone (destinations[],rendevous[])
 # Recieve drone
 # Charge drone
+from ControlRoom import distance
+from Submersive import Submersive
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS
 from display import x_to_pixels, y_to_pixels
@@ -30,7 +32,7 @@ class Boat(Vehicle):
     # ID 
     Boat_num = 0
 
-    def __init__(self, name=None, start_pos=(*COASTAL_LOCATION, 0)):
+    def __init__(self, windfarm: list[Windmill], name=None, start_pos=(*COASTAL_LOCATION, 0)):
 
         # initialise inherited values
         super(Boat, self).__init__()
@@ -51,6 +53,21 @@ class Boat(Vehicle):
         self.pos = start_pos
         # Fuel level
         self.fuel_level = BOAT_MAX_FUEL
+        # drones
+        self.drones = []
+        # number of drones deployed
+        self.drones_deployed = 0
+        # number of drones returned from deployment
+        self.drones_returned = 0
+        # Copy of entire Windfarm
+        self.windfarm = windfarm.copy()
+
+    def set_drones(self, drones):
+        self.drones = drones
+
+    def set_drone_returned(self, drone):
+        self.drones_returned += 1
+        drone.hide = True
 
     def step(self):
         super().step()
@@ -63,21 +80,35 @@ class Boat(Vehicle):
                 self.hours_at_sea = 0
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
-                if self.target.collision(self.pos[0], self.pos[1], BOAT_RADIUS):
-                    self.target = None
-                    self.next_target()
+                if type(self.target) is Windmill:
+                    if self.move(self.target.pos[:2], BOAT_RADIUS):
+                        self.set_detect_state()
+                    else:
+                        self.hours_at_sea += 1
                 else:
-                    self.hours_at_sea += 1
-                    self.move(self.target.pos[:2])
+                    if self.move(self.target, BOAT_RADIUS):
+                        self.set_detect_state()
+                    else:
+                        self.hours_at_sea += 1
         elif self.state == VehicleStates.DETECTSTATE:
-            # Boat doesn't do detection
-            print('Error', u"shouldn't be in detect state ¯\\_(ツ)_/¯")
-        elif self.state == VehicleStates.RETURNSTATE:
-            if self.pos[:2] != COASTAL_LOCATION:
+            if self.drones_deployed == 0:
+                self.windfarm.sort(key=lambda i: distance(self.pos[0], self.pos[1], i.pos[0], i.pos[1]))
+                for drone in self.drones:
+                    if len(self.windfarm) > 0:
+                        target, self.windfarm = self.windfarm[0], self.windfarm[1:]
+                        drone.set_target(target)
+                        drone.hide = False
+                    self.drones_deployed += 1
                 self.hours_at_sea += 1
-                self.move(COASTAL_LOCATION)
-            else:
+            elif self.drones_returned == self.drones_deployed:
+                self.drones_deployed, self.drones_returned = 0, 0
+                self.target = None
+                self.next_target()
+        elif self.state == VehicleStates.RETURNSTATE:
+            if self.move(COASTAL_LOCATION, BOAT_RADIUS):
                 self.set_hold_state()
+            else:
+                self.hours_at_sea += 1
 
     def __str__(self) -> str:
         return f"Boat: {self.name} \n {self.pos} with state {self.state}"
@@ -89,7 +120,7 @@ class BoatSprite(Sprite.Sprite):
         super(BoatSprite, self).__init__()
         # Add sprite
         # TODO update image to a new image
-        self.image = pygame.image.load('./sprites/subblack.png')
+        self.image = pygame.image.load('./sprites/boat-black.png')
         self.rect = self.image.get_rect()
         self.boat = boat
 
@@ -101,7 +132,7 @@ class BoatSprite(Sprite.Sprite):
         elif self.boat.state == VehicleStates.DETECTSTATE:
             self.image = pygame.image.load('./sprites/boat-green.png')
         elif self.boat.state == VehicleStates.RETURNSTATE:
-            self.image = pygame.image.load('./sprites/boat-red.png')
+            self.image = pygame.image.load('./sprites/boat-blue.png')
         return self.image
 
     def getPower(self):
