@@ -97,14 +97,14 @@ class Vehicle:
         # Update the position
         self.pos = new_pos
         # If new position is the same as destination then return true
-        return self.pos == destination
+        return distance == 0
 
     def set_target(self, destination):
         if destination is not None:
             self.target = destination
             self.set_move_state()
 
-    def set_targets(self, targets: [Windmill]):
+    def set_targets(self, targets):
         if targets is not None and len(targets) > 0:
             self.targets = targets
             self.next_target()
