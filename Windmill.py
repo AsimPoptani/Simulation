@@ -63,7 +63,6 @@ class Windmill():
             wind_s_d_update = self.datagen.update()
             self.data.update({"Wind Speed": wind_s_d_update[0]})
             self.data.update({"Wind Direction": wind_s_d_update[1]})
-            self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
             # add vibrational extras check each fault in the faults and then apply a multiplier or noise based on data before updating data
             # Only the larger vibrational data fault takes effect.
             # Change the vibrational data of the turbine based on faults and https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7957485/
@@ -73,6 +72,7 @@ class Windmill():
                 "power-converter": 11, "rotor-blades": 12, "screws": 13, "tower": 14, "transformer": 15, "yaw-system": 16}
                 sortedlist = sorted(self.faults, key=lambda d: sortorder[d["name"]])
                 for fault in sortedlist:
+                    self.data.update({"Power": round(random.uniform(0.2,0.8) * self.datagen.get_power(self.data["Wind Speed"]),2)})
                     # In order of faults which give the highest vibration to the lowest vibration. 
                     if fault["name"] == "generator":
                         self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(9,17) * 5 ,6)})
@@ -95,6 +95,7 @@ class Windmill():
                         break
             else:
                 self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
+                self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
         self.timer_counter += 1
 
     def has_fault(self):
