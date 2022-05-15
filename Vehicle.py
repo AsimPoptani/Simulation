@@ -75,7 +75,7 @@ class Vehicle:
             # And clear the new state
             self.new_state = None
 
-    def move(self, destination):
+    def move(self, destination, radius):
         # Get current position
         current_pos = self.pos[:2]
         # Add to history
@@ -97,7 +97,7 @@ class Vehicle:
         # Update the position
         self.pos = new_pos
         # If new position is the same as destination then return true
-        return distance == 0
+        return distance <= radius
 
     def set_target(self, destination):
         if destination is not None:
