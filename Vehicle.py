@@ -53,15 +53,19 @@ class Vehicle:
 
     def set_hold_state(self):
         self.new_state = VehicleStates.HOLDSTATE
+        self.step()
 
     def set_move_state(self):
         self.new_state = VehicleStates.MOVESTATE
+        self.step()
 
     def set_detect_state(self):
         self.new_state = VehicleStates.DETECTSTATE
+        self.step()
 
     def set_return_state(self):
         self.new_state = VehicleStates.RETURNSTATE
+        self.step()
 
     def step(self):
         if self.new_state is not None and self.new_state != self.state:
@@ -71,7 +75,7 @@ class Vehicle:
             # And clear the new state
             self.new_state = None
 
-    def move(self, destination):
+    def move(self, destination, radius):
         # Get current position
         current_pos = self.pos[:2]
         # Add to history
@@ -93,14 +97,14 @@ class Vehicle:
         # Update the position
         self.pos = new_pos
         # If new position is the same as destination then return true
-        return self.pos == destination
+        return distance <= radius
 
     def set_target(self, destination):
         if destination is not None:
             self.target = destination
             self.set_move_state()
 
-    def set_targets(self, targets: [Windmill]):
+    def set_targets(self, targets):
         if targets is not None and len(targets) > 0:
             self.targets = targets
             self.next_target()

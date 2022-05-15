@@ -1,3 +1,4 @@
+from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
 from config import WIDTH, HEIGHT, COASTAL_LOCATION
 from locations import locations
@@ -21,14 +22,25 @@ for location in locations:
     y = location[1]
     windfarms.append(Windmill((x, y), str(len(windfarms) + 1)))
 
-# Create boat
-sub = Submersive(windfarms, start_pos=(*COASTAL_LOCATION, 0))
-sub_sprite = SubmersiveSprite(sub)
-
-control = ControlRoom(sub, windfarms)
-
 sprites = []
-sprites.append(sub_sprite)
+
+# Create boat
+n_drones = 7
+boat = Boat(windfarms, start_pos=(*COASTAL_LOCATION, 0))
+boat_sprite = BoatSprite(boat)
+sprites.append(boat_sprite)
+drones = []
+for i in range(n_drones):
+    drone = Submersive(windfarms, boat)
+    drones.append(drone)
+    drone_sprite = SubmersiveSprite(drone)
+    sprites.append(drone_sprite)
+boat.set_drones(drones)
+
+control = ControlRoom(boat, windfarms)
+destination = control.adv_positions(n_drones)
+boat.set_targets(destination)
+
 for windmill in windfarms:
     sprites.append(WindmillSprite(windmill))
 
@@ -57,26 +69,32 @@ while running:
     screen.fill((255, 255, 255))
     for sprite in sprites:
         toBlit = sprite.getSprite()
+        if toBlit == None:
+            continue
         position = sprite.getPosition()
         name = sprite.getName()
         # to show probabilities of faulty after using averaging
-        prob = sprite.getProb()
+        prob = None
+        if type(sprite) is SubmersiveSprite:
+            prob = sprite.getProb()
         battery = sprite.getPower()
         # Update sprite for animation
         sprite.update()
 
         name_pos = position[0] - name.get_width(), position[1] - 10
         screen.blit(name, name_pos)
+
         if prob is not None:
             prob_pos = position[0] - name.get_width() + 5, position[1] + 15
             screen.blit(prob, prob_pos)
+
         screen.blit(toBlit, position)
         battery_pos = position[0] - battery.get_width(), position[1]
         screen.blit(battery, battery_pos)
 
-    destination = control.scan_farm()
-    sub.set_targets(destination)
-    sub.step()
+    boat.step()
+    for drone in drones:
+        drone.step()
 
     for windmill in windfarms:
         windmill.step()
