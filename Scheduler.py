@@ -301,7 +301,7 @@ class DronesScheduler():
 # 1. Solve a path which passes through all the windmills which are faulty and pass through as many windmills as possible with a range
 # 2. With path of base now known lets solve when a drone should be deployed and return
 
-
+'''
 
 ####### Example
 
@@ -362,3 +362,4 @@ print(boat_path)
 drone_scheduler=DronesScheduler(num_drones=1,windmills=windmills,boat_path=boat_path,index_priority_windmills=index_of_faulty_windmills,max_distance_from_boat=10,fuel=10,max_fuel=10,charge_rate=1,discharge_rate=2)
 drone_scheduler.setup()
 print(drone_scheduler._model)
+'''
