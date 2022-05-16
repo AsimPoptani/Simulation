@@ -20,7 +20,8 @@
 from ControlRoom import distance
 from Submersive import Submersive
 from Vehicle import VehicleStates, Vehicle
-from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS
+from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
+    ROTOR_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -81,7 +82,7 @@ class Boat(Vehicle):
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if type(self.target) is Windmill:
-                    if self.move(self.target.pos[:2], BOAT_RADIUS):
+                    if self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS):
                         self.set_detect_state()
                     else:
                         self.hours_at_sea += 1
@@ -98,7 +99,7 @@ class Boat(Vehicle):
                         target, self.windfarm = self.windfarm[0], self.windfarm[1:]
                         drone.set_target(target)
                         drone.hide = False
-                    self.drones_deployed += 1
+                        self.drones_deployed += 1
                 self.hours_at_sea += 1
             elif self.drones_returned == self.drones_deployed:
                 self.drones_deployed, self.drones_returned = 0, 0

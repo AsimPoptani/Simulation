@@ -26,7 +26,7 @@ AIR_DENSITY = 1.225 # At sea level
 
 # TODO fix these values
 # meters per tick
-DRONE_MAX_VELOCITY = 1000
+DRONE_MAX_VELOCITY = 7 * 1000
 #
 DRONE_MAX_BATTERY = 100
 # km
@@ -34,9 +34,7 @@ DRONE_MAX_COMMUNICATION_RANGE = 10000
 # ticks
 DRONE_MAX_DETECTION_RANGE = 10
 # dimensions of drone in meters
-DRONE_RADIUS = 1
-# multiplier for safe radius
-DRONE_SAFE_ZONE = 2
+DRONE_RADIUS = 10
 
 # meters
 BOAT_RADIUS = 84
