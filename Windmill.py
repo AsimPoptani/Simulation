@@ -2,7 +2,7 @@ import random, pygame
 from math import sqrt
 import random
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY, DRONE_SAFE_ZONE
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY
 from Weather import Datagen
 from faults import FAULTS
 import Sprite
@@ -111,14 +111,6 @@ class Windmill():
         distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
         radii = radius + ROTOR_RADIUS
         return distance < radii
-
-    # TODO may not need
-    def safezone(self, x, y, radius) -> bool:
-        """is the given x and y position and radius within this windmill's safe zone ?"""
-        distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
-        radii = radius + ROTOR_RADIUS + DRONE_MAX_VELOCITY
-        safe_zone = distance < radii
-        return safe_zone and not self.collision(x, y, radius * DRONE_SAFE_ZONE)
 
     def __str__(self) -> str:
         return f"Windmill at {self.pos} \n with faults: {self.faults}"
