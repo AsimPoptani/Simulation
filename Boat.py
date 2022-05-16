@@ -137,7 +137,17 @@ class BoatSprite(Sprite.Sprite):
         return self.image
 
     def getPower(self):
-        return pygame.image.load('./sprites/battery-100.png')
+        percentage = (self.boat.fuel_level / BOAT_MAX_FUEL) * 100
+        if percentage > (100 + 75) / 2:
+            return pygame.image.load('./sprites/battery-100.png')
+        elif percentage > (75 + 50) / 2:
+            return pygame.image.load('./sprites/battery-75.png')
+        elif percentage > (50 + 25) / 2:
+            return pygame.image.load('./sprites/battery-50.png')
+        elif percentage > 25 / 2:
+            return pygame.image.load('./sprites/battery-25.png')
+        else:
+            return pygame.image.load('./sprites/battery-0.png')
 
     def getPosition(self):
         x = x_to_pixels(self.boat.pos[0])
