@@ -27,23 +27,23 @@ AIR_DENSITY = 1.225 # At sea level
 # TODO fix these values
 # meters per tick
 DRONE_MAX_VELOCITY = 7 * 1000
-#
-DRONE_MAX_BATTERY = 100
+# hours
+DRONE_MAX_BATTERY = 8
 # km
-DRONE_MAX_COMMUNICATION_RANGE = 10000
+DRONE_MAX_COMMUNICATION_RANGE = 10 * 1000
 # ticks
 DRONE_MAX_DETECTION_RANGE = 10
 # dimensions of drone in meters
-DRONE_RADIUS = 10
+DRONE_RADIUS = 5
 
 # meters
 BOAT_RADIUS = 84
-#
-BOAT_MAX_FUEL = 1000
+# hours
+BOAT_MAX_FUEL = 120 * 24
 # meters per tick
 BOAT_MAX_VELOCITY = 20 * 1000
 # number of drones per boat
-BOAT_N_DRONES = 2
+BOAT_N_DRONES = 35
 
 # ticks
 DATA_UPDATE_INTERVAL = 20
