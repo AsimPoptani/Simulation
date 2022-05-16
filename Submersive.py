@@ -57,6 +57,7 @@ class Submersive(Vehicle):
 
         if self.state == VehicleStates.HOLDSTATE:
             if self in self.adv.drones:
+                self.hide = True
                 self.pos = self.adv.pos  # drone is onboard the ADV
                 self.distance_travelled = 0  # reset distance
                 if self.fuel_level < DRONE_MAX_BATTERY:
