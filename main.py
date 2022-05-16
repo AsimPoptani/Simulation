@@ -9,7 +9,7 @@ from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame
 
-SIMULATION_TIME_FAULTS = 365
+SIMULATION_TIME_FAULTS = 365 * 24
 
 # Create windmills according to the generated locations
 windfarms = []
@@ -21,6 +21,12 @@ for location in locations:
     x = location[0]
     y = location[1]
     windfarms.append(Windmill((x, y), str(len(windfarms) + 1)))
+
+# Run a simulation of 1 year to generate faults in Windmills
+for i in range(SIMULATION_TIME_FAULTS):
+    for windmill in windfarms:
+        # TODO inside step add faults for each day etc
+        windmill.step()
 
 sprites = []
 
@@ -37,7 +43,10 @@ for i in range(BOAT_N_DRONES):
 boat.set_drones(drones)
 
 control = ControlRoom(boat, windfarms)
-destination = control.adv_positions(5)
+destination = control.get_boat_positions()
+if len(destination) == 0:
+    print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
+    destination = control.adv_positions(5)
 boat.set_targets(destination)
 
 for windmill in windfarms:
@@ -48,12 +57,6 @@ pygame.init()
 # Set up the drawing window
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 clock = pygame.time.Clock()
-
-# Run a simulation of 1 year to generate faults in Windmills
-for i in range(SIMULATION_TIME_FAULTS):
-    for windmill in windfarms:
-        # TODO inside step add faults for each day etc
-        windmill.step()
 
 # Run until the user asks to quit
 running = True
