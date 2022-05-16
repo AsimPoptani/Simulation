@@ -21,7 +21,7 @@ from ControlRoom import distance
 from Submersive import Submersive
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
-    ROTOR_RADIUS
+    ROTOR_RADIUS, DRONE_MAX_BATTERY, DRONE_MAX_VELOCITY
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -69,6 +69,7 @@ class Boat(Vehicle):
     def set_drone_returned(self, drone):
         self.drones_returned += 1
         drone.hide = True
+        self.drones.append(drone)
 
     def step(self):
         super().step()
@@ -79,6 +80,12 @@ class Boat(Vehicle):
                 self.distance_travelled = 0
                 print(self.hours_at_sea, "hours")
                 self.hours_at_sea = 0
+
+                print(175 - len(self.windfarm), 'turbines checked.')
+                print(len(self.windfarm), 'turbines remain unchecked.')
+
+                if self.fuel_level < BOAT_MAX_FUEL:
+                    self.fuel_level += 1
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if type(self.target) is Windmill:
@@ -94,14 +101,17 @@ class Boat(Vehicle):
         elif self.state == VehicleStates.DETECTSTATE:
             if self.drones_deployed == 0:
                 self.windfarm.sort(key=lambda i: distance(self.pos[0], self.pos[1], i.pos[0], i.pos[1]))
-                for drone in self.drones:
-                    if len(self.windfarm) > 0:
-                        target, self.windfarm = self.windfarm[0], self.windfarm[1:]
-                        drone.set_target(target)
-                        drone.hide = False
-                        self.drones_deployed += 1
+                windmills = list(filter(lambda i: distance(self.pos[0], self.pos[1], i.pos[0], i.pos[1]) < DRONE_MAX_VELOCITY * (DRONE_MAX_BATTERY / 2.75), self.windfarm))
+                while len(windmills) > 0 and len(self.drones) > 0:
+                    target, windmills = windmills[0], windmills[1:]
+                    self.windfarm.remove(target)
+                    drone, self.drones = self.drones[0], self.drones[1:]
+                    drone.set_target(target)
+                    drone.hide = False
+                    self.drones_deployed += 1
                 self.hours_at_sea += 1
-            elif self.drones_returned == self.drones_deployed:
+                self.fuel_level -= 1
+            if self.drones_returned == self.drones_deployed:
                 self.drones_deployed, self.drones_returned = 0, 0
                 self.target = None
                 self.next_target()
@@ -110,6 +120,7 @@ class Boat(Vehicle):
                 self.set_hold_state()
             else:
                 self.hours_at_sea += 1
+                self.fuel_level -= 1
 
     def __str__(self) -> str:
         return f"Boat: {self.name} \n {self.pos} with state {self.state}"

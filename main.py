@@ -1,6 +1,6 @@
 from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
-from config import WIDTH, HEIGHT, COASTAL_LOCATION
+from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES
 from locations import locations
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -25,12 +25,11 @@ for location in locations:
 sprites = []
 
 # Create boat
-n_drones = 7
 boat = Boat(windfarms, start_pos=(*COASTAL_LOCATION, 0))
 boat_sprite = BoatSprite(boat)
 sprites.append(boat_sprite)
 drones = []
-for i in range(n_drones):
+for i in range(BOAT_N_DRONES):
     drone = Submersive(windfarms, boat)
     drones.append(drone)
     drone_sprite = SubmersiveSprite(drone)
@@ -38,7 +37,7 @@ for i in range(n_drones):
 boat.set_drones(drones)
 
 control = ControlRoom(boat, windfarms)
-destination = control.adv_positions(n_drones)
+destination = control.adv_positions(2)
 boat.set_targets(destination)
 
 for windmill in windfarms:

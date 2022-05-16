@@ -56,11 +56,15 @@ class Submersive(Vehicle):
         super().step()
 
         if self.state == VehicleStates.HOLDSTATE:
-            self.pos = self.adv.pos
+            if self in self.adv.drones:
+                self.pos = self.adv.pos
+                if self.fuel_level < DRONE_MAX_BATTERY:
+                    self.fuel_level += 1
         elif self.state == VehicleStates.MOVESTATE:
-            if self.target is not None:
+            if self.target is not None and self.fuel_level > 0:
                 if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
                     self.set_detect_state()
+                self.fuel_level -= 1
         elif self.state == VehicleStates.DETECTSTATE:
             if self.target.has_fault():
                 self.detect()
@@ -68,9 +72,11 @@ class Submersive(Vehicle):
                 self.target = None
                 self.next_target()
         elif self.state == VehicleStates.RETURNSTATE:
-            if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
-                self.adv.set_drone_returned(self)
-                self.set_hold_state()
+            if self.fuel_level > 0:
+                if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
+                    self.adv.set_drone_returned(self)
+                    self.set_hold_state()
+                self.fuel_level -= 1
 
     def set_detect_state(self):
         for fault in self.target.faults:
@@ -90,7 +96,6 @@ class SubmersiveSprite(Sprite.Sprite):
         self.image = pygame.image.load('./sprites/subblack.png')
         self.rect = self.image.get_rect()
         self.submersive = submersive
-        self.hide = True
 
     def getSprite(self):
         if self.submersive.hide:
