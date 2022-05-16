@@ -1,6 +1,7 @@
 from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
-from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES
+from Vehicle import VehicleStates
+from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES, BOAT_MAX_FUEL
 from locations import locations
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -46,7 +47,7 @@ control = ControlRoom(boat, windfarms)
 destination = control.get_boat_positions()
 if len(destination) == 0:
     print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
-    destination = control.adv_positions(5)
+    destination = control.adv_positions(3)
 boat.set_targets(destination)
 
 for windmill in windfarms:
@@ -97,6 +98,10 @@ while running:
     boat.step()
     for drone in drones:
         drone.step()
+
+    if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL:
+        destination = control.adv_positions(3)
+        boat.set_targets(destination)
 
     for windmill in windfarms:
         windmill.step()

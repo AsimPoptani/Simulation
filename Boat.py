@@ -17,6 +17,8 @@
 # Deploy drone (destinations[],rendevous[])
 # Recieve drone
 # Charge drone
+from math import pi
+
 from ControlRoom import distance
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
@@ -61,6 +63,8 @@ class Boat(Vehicle):
         self.drones_returned = 0
         # Copy of entire Windfarm
         self.windfarm = windfarm.copy()
+        # for restoring working copy
+        self.windfarm_cache = windfarm.copy()
 
     def set_drones(self, drones):
         self.drones = drones
@@ -83,8 +87,13 @@ class Boat(Vehicle):
                 print(175 - len(self.windfarm), 'turbines checked.')
                 print(len(self.windfarm), 'turbines remain unchecked.')
 
-                if self.fuel_level < BOAT_MAX_FUEL:
-                    self.fuel_level += 1
+                # refresh copy of windfarm
+                self.windfarm = self.windfarm_cache.copy()
+
+            if self.fuel_level < BOAT_MAX_FUEL:
+                self.fuel_level += 4
+            else:
+                self.fuel_level = BOAT_MAX_FUEL
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if type(self.target) is Windmill:
@@ -99,7 +108,7 @@ class Boat(Vehicle):
                         self.hours_at_sea += 1
         elif self.state == VehicleStates.DETECTSTATE:
             if self.drones_deployed == 0:
-                max_distance = (DRONE_MAX_BATTERY / 2) - (DRONE_RADIUS + ROTOR_RADIUS)
+                max_distance = (DRONE_MAX_BATTERY / 2) - (4 * pi * (DRONE_RADIUS + ROTOR_RADIUS))
                 windmills = list(filter(lambda i: distance(*self.pos[:2], *i.pos[:2]) < max_distance, self.windfarm))
                 while len(windmills) > 0 and len(self.drones) > 0:
                     target, windmills = windmills[0], windmills[1:]
@@ -108,6 +117,9 @@ class Boat(Vehicle):
                     drone.set_target(target)
                     drone.hide = False
                     self.drones_deployed += 1
+                self.hours_at_sea += 1
+                self.fuel_level -= 1
+            elif self.drones_returned != self.drones_deployed:
                 self.hours_at_sea += 1
                 self.fuel_level -= 1
             if self.drones_returned == self.drones_deployed:
@@ -141,9 +153,9 @@ class BoatSprite(Sprite.Sprite):
         elif self.boat.state == VehicleStates.MOVESTATE:
             self.image = pygame.image.load('./sprites/boat-red.png')
         elif self.boat.state == VehicleStates.DETECTSTATE:
-            self.image = pygame.image.load('./sprites/boat-green.png')
-        elif self.boat.state == VehicleStates.RETURNSTATE:
             self.image = pygame.image.load('./sprites/boat-blue.png')
+        elif self.boat.state == VehicleStates.RETURNSTATE:
+            self.image = pygame.image.load('./sprites/boat-red.png')
         return self.image
 
     def getPower(self):
