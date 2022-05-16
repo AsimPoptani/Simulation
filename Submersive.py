@@ -57,14 +57,17 @@ class Submersive(Vehicle):
 
         if self.state == VehicleStates.HOLDSTATE:
             if self in self.adv.drones:
-                self.pos = self.adv.pos
+                self.pos = self.adv.pos  # drone is onboard the ADV
+                self.distance_travelled = 0  # reset distance
                 if self.fuel_level < DRONE_MAX_BATTERY:
-                    self.fuel_level += 1
+                    self.fuel_level += DRONE_MAX_VELOCITY
+                else:
+                    self.fuel_level = DRONE_MAX_BATTERY  # don't overshoot
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None and self.fuel_level > 0:
                 if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
                     self.set_detect_state()
-                self.fuel_level -= 1
+                self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
         elif self.state == VehicleStates.DETECTSTATE:
             if self.target.has_fault():
                 self.detect()
@@ -76,7 +79,7 @@ class Submersive(Vehicle):
                 if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
                     self.adv.set_drone_returned(self)
                     self.set_hold_state()
-                    self.fuel_level -= 1
+                self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
 
     def set_detect_state(self):
         for fault in self.target.faults:
