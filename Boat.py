@@ -21,7 +21,7 @@ from ControlRoom import distance
 from Submersive import Submersive
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
-    ROTOR_RADIUS, DRONE_MAX_BATTERY, DRONE_MAX_VELOCITY
+    ROTOR_RADIUS, DRONE_MAX_BATTERY, DRONE_MAX_VELOCITY, DRONE_RADIUS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -100,8 +100,8 @@ class Boat(Vehicle):
                         self.hours_at_sea += 1
         elif self.state == VehicleStates.DETECTSTATE:
             if self.drones_deployed == 0:
-                self.windfarm.sort(key=lambda i: distance(self.pos[0], self.pos[1], i.pos[0], i.pos[1]))
-                windmills = list(filter(lambda i: distance(self.pos[0], self.pos[1], i.pos[0], i.pos[1]) < DRONE_MAX_VELOCITY * (DRONE_MAX_BATTERY / 2.75), self.windfarm))
+                max_distance = (DRONE_MAX_VELOCITY * (DRONE_MAX_BATTERY / 2)) - (DRONE_RADIUS + ROTOR_RADIUS)
+                windmills = list(filter(lambda i: distance(self.pos[0], self.pos[1], i.pos[0], i.pos[1]) < max_distance, self.windfarm))
                 while len(windmills) > 0 and len(self.drones) > 0:
                     target, windmills = windmills[0], windmills[1:]
                     self.windfarm.remove(target)

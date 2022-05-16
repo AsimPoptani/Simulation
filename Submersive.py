@@ -1,7 +1,7 @@
 
 from Vehicle import Vehicle, VehicleStates
 from Windmill import Windmill
-from config import COASTAL_LOCATION, DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS, \
+from config import DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS, \
     ROTOR_RADIUS, BOAT_RADIUS
 from display import x_to_pixels, y_to_pixels
 from averaging import Averaging
@@ -76,7 +76,7 @@ class Submersive(Vehicle):
                 if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
                     self.adv.set_drone_returned(self)
                     self.set_hold_state()
-                self.fuel_level -= 1
+                    self.fuel_level -= 1
 
     def set_detect_state(self):
         for fault in self.target.faults:

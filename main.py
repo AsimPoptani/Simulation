@@ -37,7 +37,7 @@ for i in range(BOAT_N_DRONES):
 boat.set_drones(drones)
 
 control = ControlRoom(boat, windfarms)
-destination = control.adv_positions(2)
+destination = control.adv_positions(5)
 boat.set_targets(destination)
 
 for windmill in windfarms:
