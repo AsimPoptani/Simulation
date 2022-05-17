@@ -1,7 +1,7 @@
 from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
 from Vehicle import VehicleStates
-from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES, BOAT_MAX_FUEL
+from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES, BOAT_MAX_FUEL, SIMULATION_TIME_FAULTS
 from locations import locations
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -10,48 +10,52 @@ from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame
 
-SIMULATION_TIME_FAULTS = 365 * 24
 
-# Create windmills according to the generated locations
-windfarms = []
+def initialise_windfarm(sim_sprites) -> [Windmill]:
+    windfarm = []
+    for location in locations:
+        turbine = Windmill(location, str(len(windfarm) + 1))
+        windfarm.append(turbine)
+        sim_sprites.append(WindmillSprite(turbine))
 
-# Drones
-drones = []
+    # Run a simulation of 1 year to generate faults in Windmills
+    for i in range(SIMULATION_TIME_FAULTS):
+        for turbine in windfarm:
+            # TODO inside step add faults for each day etc
+            turbine.step()
 
-for location in locations:
-    x = location[0]
-    y = location[1]
-    windfarms.append(Windmill((x, y), str(len(windfarms) + 1)))
+    return windfarm
 
-# Run a simulation of 1 year to generate faults in Windmills
-for i in range(SIMULATION_TIME_FAULTS):
-    for windmill in windfarms:
-        # TODO inside step add faults for each day etc
-        windmill.step()
+
+def initialise_aquatic_crafts(sim_sprites) -> (Boat, [Submersive]):
+    adv = Boat(windfarms, start_pos=(*COASTAL_LOCATION, 0))
+    boat_sprite = BoatSprite(adv)
+    sim_sprites.append(boat_sprite)
+    auvs = []
+    for i in range(BOAT_N_DRONES):
+        auv = Submersive(windfarms, adv)
+        auvs.append(auv)
+        drone_sprite = SubmersiveSprite(auv)
+        sim_sprites.append(drone_sprite)
+    adv.set_drones(auvs)
+
+    return adv, auvs
+
+
+def create_path(control_room, adv):
+    destination = control_room.get_boat_positions()
+    if len(destination) == 0:
+        print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
+        destination = control_room.adv_positions(3)
+    adv.set_targets(destination)
+
 
 sprites = []
-
-# Create boat
-boat = Boat(windfarms, start_pos=(*COASTAL_LOCATION, 0))
-boat_sprite = BoatSprite(boat)
-sprites.append(boat_sprite)
-drones = []
-for i in range(BOAT_N_DRONES):
-    drone = Submersive(windfarms, boat)
-    drones.append(drone)
-    drone_sprite = SubmersiveSprite(drone)
-    sprites.append(drone_sprite)
-boat.set_drones(drones)
-
+windfarms = initialise_windfarm(sprites)
+boat, drones = initialise_aquatic_crafts(sprites)
 control = ControlRoom(boat, windfarms)
-destination = control.get_boat_positions()
-if len(destination) == 0:
-    print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
-    destination = control.adv_positions(3)
-boat.set_targets(destination)
+create_path(control, boat)
 
-for windmill in windfarms:
-    sprites.append(WindmillSprite(windmill))
 
 pygame.init()
 
@@ -100,8 +104,7 @@ while running:
         drone.step()
 
     if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL:
-        destination = control.adv_positions(3)
-        boat.set_targets(destination)
+        create_path(control, boat)
 
     for windmill in windfarms:
         windmill.step()

@@ -51,3 +51,5 @@ BOAT_N_DRONES = 40
 DATA_UPDATE_INTERVAL = 20
 # value by which the probabilities are divided
 FAULT_RATE_DIVISOR = 24 * 60 * 60
+# ticks
+SIMULATION_TIME_FAULTS = 365 * 24
