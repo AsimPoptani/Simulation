@@ -26,28 +26,30 @@ AIR_DENSITY = 1.225 # At sea level
 
 # TODO fix these values
 # meters per tick
-DRONE_MAX_VELOCITY = 1000
-#
-DRONE_MAX_BATTERY = 100
+DRONE_MAX_VELOCITY = 7 * 1000
+# hours
+DRONE_HOURS_POWER = 8
 # km
-DRONE_MAX_COMMUNICATION_RANGE = 10000
+DRONE_MAX_BATTERY = DRONE_HOURS_POWER * DRONE_MAX_VELOCITY
+# km
+DRONE_MAX_COMMUNICATION_RANGE = 10 * 1000
 # ticks
 DRONE_MAX_DETECTION_RANGE = 10
 # dimensions of drone in meters
-DRONE_RADIUS = 1
-# multiplier for safe radius
-DRONE_SAFE_ZONE = 2
+DRONE_RADIUS = 5
 
 # meters
 BOAT_RADIUS = 84
-#
-BOAT_MAX_FUEL = 1000
+# hours
+BOAT_MAX_FUEL = 120 * 24
 # meters per tick
 BOAT_MAX_VELOCITY = 20 * 1000
 # number of drones per boat
-BOAT_N_DRONES = 2
+BOAT_N_DRONES = 40
 
 # ticks
 DATA_UPDATE_INTERVAL = 20
 # value by which the probabilities are divided
 FAULT_RATE_DIVISOR = 24 * 60 * 60
+# ticks
+SIMULATION_TIME_FAULTS = 365 * 24

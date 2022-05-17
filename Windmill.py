@@ -2,7 +2,7 @@ import random, pygame
 from math import sqrt
 import random
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY, DRONE_SAFE_ZONE
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY
 from Weather import Datagen
 from faults import FAULTS
 import Sprite
@@ -26,6 +26,8 @@ class Windmill():
         self.potential_faults = FAULTS
         self.pos = position
         self.faults=[]
+        # Store probability of fault after inspection
+        self.fault_prob = 0
         # Data timer
         self.timer_counter = 0
         # Data generated from turbines WindSpeed in m/s, Wind direction in degrees, power in Watts, Vibration in m/s^2 (accerleration)
@@ -61,7 +63,6 @@ class Windmill():
             wind_s_d_update = self.datagen.update()
             self.data.update({"Wind Speed": wind_s_d_update[0]})
             self.data.update({"Wind Direction": wind_s_d_update[1]})
-            self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
             # add vibrational extras check each fault in the faults and then apply a multiplier or noise based on data before updating data
             # Only the larger vibrational data fault takes effect.
             # Change the vibrational data of the turbine based on faults and https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7957485/
@@ -71,6 +72,7 @@ class Windmill():
                 "power-converter": 11, "rotor-blades": 12, "screws": 13, "tower": 14, "transformer": 15, "yaw-system": 16}
                 sortedlist = sorted(self.faults, key=lambda d: sortorder[d["name"]])
                 for fault in sortedlist:
+                    self.data.update({"Power": round(random.uniform(0.2,0.8) * self.datagen.get_power(self.data["Wind Speed"]),2)})
                     # In order of faults which give the highest vibration to the lowest vibration. 
                     if fault["name"] == "generator":
                         self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(9,17) * 5 ,6)})
@@ -93,6 +95,7 @@ class Windmill():
                         break
             else:
                 self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
+                self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
         self.timer_counter += 1
 
     def has_fault(self):
@@ -108,14 +111,6 @@ class Windmill():
         distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
         radii = radius + ROTOR_RADIUS
         return distance < radii
-
-    # TODO may not need
-    def safezone(self, x, y, radius) -> bool:
-        """is the given x and y position and radius within this windmill's safe zone ?"""
-        distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
-        radii = radius + ROTOR_RADIUS + DRONE_MAX_VELOCITY
-        safe_zone = distance < radii
-        return safe_zone and not self.collision(x, y, radius * DRONE_SAFE_ZONE)
 
     def __str__(self) -> str:
         return f"Windmill at {self.pos} \n with faults: {self.faults}"
@@ -194,6 +189,13 @@ class WindmillSprite(Sprite.Sprite):
 
     def getName(self):
         text = self.set_text(self.windmill.name, 0, 0, 10)[0]
+        return text
+
+    # Text for probabilty
+    def getProb(self):
+        text = None
+        if self.windmill.fault_prob > 0:
+            text = self.set_text(str(self.windmill.fault_prob) + "%", 0, 0, 9)[0]
         return text
 
     def debug(self):

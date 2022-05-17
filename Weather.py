@@ -26,19 +26,17 @@ class Datagen():
                 return self.speed,self.direction
 
     # Account for noise / slight variations in speed across wind turbines. Returns an updated wind speed in m/s and direction
+    # Call every hour to get new windspeeds
     def update(self):
-        self.speedu = round(self.speed * np.random.uniform(0.98,1.02),2)
-        self.directionu = round(self.direction * np.random.uniform(0.98,1.02),2)
-        return self.speedu, self.directionu
-
-    # call update_hour only after get_speed. Updates the widn speed and direction by an hour when called. If get_speed is not called then default is the 1/1 hour 0
-    def update_hour(self):
         self.counter += 1
         if self.counter > 8760:
             self.counter = 0
         self.speed = array[self.counter, 3]
         self.direction = array[self.counter, 4]
-        return self.speed,self.direction
+
+        self.speedu = round(self.speed * np.random.uniform(0.98,1.02),2)
+        self.directionu = round(self.direction * np.random.uniform(0.98,1.02),2)
+        return self.speedu, self.directionu
 
     # get power in Watts calculated from the wind speed. https://www.raeng.org.uk/publications/other/23-wind-turbine
     def get_power(self, windspeed):
