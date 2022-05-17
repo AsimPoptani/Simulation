@@ -11,7 +11,8 @@ from time import time_ns
 from time_utilities import nanosecond_string
 
 
-def get_highest_priority_for_windmill(windmill):
+def get_highest_priority_for_windmill(windmill: Windmill):
+    """return the highest priority for the given Windmill"""
     priority = 0
     for fault in windmill.faults:
         # if this fault has a higher priority than the other faults seen so far for this turbine
@@ -26,7 +27,8 @@ def distance(x1, y1, x2, y2):
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
 
-def centroid(windmills):
+def centroid(windmills: [Windmill]):
+    """return the centroid of the given Windmills"""
     accumulator_x, accumulator_y = 0, 0
     m = len(windmills)
     for i in range(m):
@@ -35,6 +37,19 @@ def centroid(windmills):
     accumulator_x /= m
     accumulator_y /= m
     return accumulator_x, accumulator_y
+
+
+def check_schedular_params(positions, x_bound, y_bound) -> bool:
+    """utility function, checks bounds for get_boat_positions()"""
+    valid = True
+    for position in positions:
+        if position[0] > x_bound:
+            valid = False
+        if position[1] > y_bound:
+            valid = False
+        if not valid:
+            break
+    return valid
 
 
 class ControlRoom:
@@ -76,10 +91,6 @@ class ControlRoom:
             windmills.append(self.windfarm[i])
         return windmills
 
-    def furthest(self, furthest=True):
-        """return the furthest turbine from the coastal start point, or the nearest if 'furthest' keyword is False."""
-        return furthest(COASTAL_LOCATION, furthest=furthest)
-
     def furthest(self, position, furthest=True):
         """return the furthest turbine from the given position, or the nearest if 'furthest' keyword is False."""
         # clone the wind farm into a new list
@@ -90,17 +101,8 @@ class ControlRoom:
         windmills = [windmills[0]]
         return windmills
 
-    def adv_positions(self, n):
-        windmills = self.windfarm.copy()
-        destinations = []
-        while len(windmills) > 0:
-            m = min(n, len(windmills))
-            next_m, windmills = windmills[:m], windmills[m:]
-            accumulator_x, accumulator_y = centroid(next_m)
-            destinations.append((accumulator_x, accumulator_y))
-        return tuple(destinations)
-
     def find_path(self):
+        """find a path around the wind farm for the ADV"""
         windmills = self.windfarm.copy()
         positions = []
         timer = time_ns()
@@ -125,14 +127,15 @@ class ControlRoom:
             final_positions.append(current)
         return final_positions
 
-
     def nearest_n_targets(self, x, y, n):
+        """return the nearest n Windmills to the given position"""
         windmills = self.windfarm.copy()
         # sort by distance from the vehicle
         windmills.sort(key=lambda i: distance(x, y, i.pos[0], i.pos[1]))
         return windmills[:n]
 
     def fetch_windmill_positions(self):
+        """utility function for get_boat_positions()"""
         windmills = []
         indexes = []
         for i in range(len(self.windfarm)):
@@ -142,18 +145,8 @@ class ControlRoom:
                 indexes.append(i)
         return tuple(windmills), tuple(indexes)
 
-    def check_schedular_params(self, positions, x_bound, y_bound) -> bool:
-        valid = True
-        for position in positions:
-            if position[0] > x_bound:
-                valid = False
-            if position[1] > y_bound:
-                valid = False
-            if not valid:
-                break
-        return valid
-
     def get_boat_positions(self):
+        """find a path for the ADV using the CSP-based Schedular"""
         boat_path = []
         horizon = 250
         windmills, indexes = self.fetch_windmill_positions()
@@ -161,7 +154,7 @@ class ControlRoom:
             return []
         x_bound = max(max_x + (BOAT_RADIUS * 4), COASTAL_LOCATION[0])
         y_bound = max(max_y + (BOAT_RADIUS * 4), COASTAL_LOCATION[1])
-        valid = self.check_schedular_params(windmills, x_bound, y_bound)
+        valid = check_schedular_params(windmills, x_bound, y_bound)
         if not valid:
             return []
         boat_range = round(BOAT_RADIUS * 1.5)
