@@ -11,7 +11,7 @@ from Submersive import Submersive, SubmersiveSprite
 import pygame
 
 
-def initialise_windfarm(sim_sprites) -> [Windmill]:
+def initialise_windfarm(sim_sprites) -> list [Windmill]:
     windfarm = []
     for location in locations:
         turbine = Windmill(location, str(len(windfarm) + 1))
@@ -43,7 +43,7 @@ def initialise_aquatic_crafts(sim_sprites) -> (Boat, [Submersive]):
 
 
 def create_path(control_room, adv):
-    destination = control_room.get_boat_positions()
+    destination = [] ##control_room.get_boat_positions()
     if len(destination) == 0:
         print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
         destination = control_room.adv_positions(3)
@@ -88,7 +88,7 @@ while running:
         # Update sprite for animation
         sprite.update()
 
-        name_pos = position[0] - name.get_width(), position[1] - 10
+        name_pos = position[0] - name.get_width()+25, position[1] - 10
         screen.blit(name, name_pos)
 
         if prob is not None:
@@ -96,7 +96,7 @@ while running:
             screen.blit(prob, prob_pos)
 
         screen.blit(toBlit, position)
-        battery_pos = position[0] - battery.get_width(), position[1]
+        battery_pos = position[0] - battery.get_width()+25, position[1] 
         screen.blit(battery, battery_pos)
 
     boat.step()
@@ -127,7 +127,7 @@ while running:
     # Update the display
     pygame.display.flip()
 
-    clock.tick(30)
+    clock.tick(10)
 
 # Done! Time to quit.
 pygame.quit()
