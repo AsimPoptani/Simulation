@@ -82,22 +82,32 @@ while running:
         name = sprite.getName()
         # to show probabilities of faulty after using averaging
         prob = None
+        battery = None
+        power = None
         if type(sprite) is SubmersiveSprite:
             prob = sprite.getProb()
-        battery = sprite.getPower()
+            battery = sprite.getBattery()
+        if type(sprite) is BoatSprite:
+            battery = sprite.getBattery()
+        if type(sprite) is WindmillSprite:
+            power = sprite.getPower()
+        
         # Update sprite for animation
         sprite.update()
 
         name_pos = position[0] - name.get_width()+25, position[1] - 10
         screen.blit(name, name_pos)
+        screen.blit(toBlit, position)
 
         if prob is not None:
             prob_pos = position[0] - name.get_width() + 5, position[1] + 15
             screen.blit(prob, prob_pos)
-
-        screen.blit(toBlit, position)
-        battery_pos = position[0] - battery.get_width()+25, position[1] 
-        screen.blit(battery, battery_pos)
+        if battery is not None:
+            battery_pos = position[0] - battery.get_width(), position[1]
+            screen.blit(battery, battery_pos)
+        if power is not None:
+            power_pos = position[0] - power.get_width()+25, position[1] 
+            screen.blit(power, power_pos)
 
     boat.step()
     for drone in drones:
