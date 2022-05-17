@@ -100,7 +100,7 @@ while running:
         screen.blit(toBlit, position)
 
         if prob is not None:
-            prob_pos = position[0] - name.get_width() + 5, position[1] + 15
+            prob_pos = position[0] - name.get_width() + 20, position[1] + 15
             screen.blit(prob, prob_pos)
         if battery is not None:
             battery_pos = position[0] - battery.get_width(), position[1]
