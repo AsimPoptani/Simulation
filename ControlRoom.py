@@ -1,11 +1,11 @@
-from math import inf, sqrt
+from math import sqrt
 
 from ortools.sat.python import cp_model
 
 from Scheduler import BoatScheduler
 from Windmill import Windmill
-from config import COASTAL_LOCATION, BOAT_RADIUS, BOAT_MAX_VELOCITY
-from locations import locations, max_x, max_y
+from config import COASTAL_LOCATION, BOAT_RADIUS, BOAT_MAX_VELOCITY, MAX_SCAN_DISTANCE
+from locations import max_x, max_y, min_x, min_y, x_space, y_space
 
 from time import time_ns
 from time_utilities import nanosecond_string
@@ -99,6 +99,32 @@ class ControlRoom:
             accumulator_x, accumulator_y = centroid(next_m)
             destinations.append((accumulator_x, accumulator_y))
         return tuple(destinations)
+
+    def find_path(self):
+        windmills = self.windfarm.copy()
+        positions = []
+        timer = time_ns()
+        for g in range(9, 0, -1):
+            print('finding groups of', g)
+            for j in range(min_y, max_y, y_space // 8):
+                for i in range(min_x, max_x, x_space // 8):
+                    turbines = list(filter(lambda k: distance(i, j, *k.pos[:2]) < MAX_SCAN_DISTANCE, windmills))
+                    if len(turbines) == g:
+                        positions.append((i, j))
+                        for turbine in turbines:
+                            windmills.remove(turbine)
+        timer = time_ns() - timer
+        print(nanosecond_string(timer))
+        print(len(windmills), 'turbines not covered.')
+        final_positions = []
+        current, positions = positions[0], positions[1:]
+        final_positions.append(current)
+        while len(positions) > 0:
+            positions.sort(key=lambda x: distance(current[0], current[1], x[0], x[1]))
+            current, positions = positions[0], positions[1:]
+            final_positions.append(current)
+        return final_positions
+
 
     def nearest_n_targets(self, x, y, n):
         windmills = self.windfarm.copy()

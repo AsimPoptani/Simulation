@@ -46,7 +46,7 @@ def create_path(control_room, adv):
     destination = [] ##control_room.get_boat_positions()
     if len(destination) == 0:
         print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
-        destination = control_room.adv_positions(3)
+        destination = control_room.find_path()
     adv.set_targets(destination)
 
 
