@@ -1,9 +1,8 @@
-from math import pi
 
 from Vehicle import Vehicle, VehicleStates
 from Windmill import Windmill
 from config import DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS, \
-    ROTOR_RADIUS, BOAT_RADIUS
+    ROTOR_RADIUS, BOAT_RADIUS, CIRCUMNAVIGATION_DISTANCE
 from display import x_to_pixels, y_to_pixels
 from averaging import Averaging
 import Sprite
@@ -86,7 +85,7 @@ class Submersive(Vehicle):
     def set_detect_state(self):
         for fault in self.target.faults:
             self.detection_time += fault["timeToDetect"]
-        self.distance_travelled += 2 * pi * (DRONE_RADIUS + ROTOR_RADIUS)
+        self.distance_travelled += CIRCUMNAVIGATION_DISTANCE
         super().set_detect_state()
 
     def __str__(self) -> str:
