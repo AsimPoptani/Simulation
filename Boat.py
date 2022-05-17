@@ -108,7 +108,7 @@ class Boat(Vehicle):
                         self.hours_at_sea += 1
         elif self.state == VehicleStates.DETECTSTATE:
             if self.drones_deployed == 0:
-                max_distance = (DRONE_MAX_BATTERY / 2) - (4 * pi * (DRONE_RADIUS + ROTOR_RADIUS))
+                max_distance = (DRONE_MAX_BATTERY / 2) - (2 * pi * (DRONE_RADIUS + ROTOR_RADIUS))
                 windmills = list(filter(lambda i: distance(*self.pos[:2], *i.pos[:2]) < max_distance, self.windfarm))
                 while len(windmills) > 0 and len(self.drones) > 0:
                     target, windmills = windmills[0], windmills[1:]

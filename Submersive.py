@@ -48,7 +48,6 @@ class Submersive(Vehicle):
     def detect(self):
         if self.detection_time > 0:
             self.detection_time -= 1
-            self.distance_travelled += 2 * pi * (DRONE_RADIUS + ROTOR_RADIUS)
         else:
             # Once inspected give prob of faulty
             self.target.fault_prob = self.averaging.check_faulty(self.target,5)
@@ -87,6 +86,7 @@ class Submersive(Vehicle):
     def set_detect_state(self):
         for fault in self.target.faults:
             self.detection_time += fault["timeToDetect"]
+        self.distance_travelled += 2 * pi * (DRONE_RADIUS + ROTOR_RADIUS)
         super().set_detect_state()
 
     def __str__(self) -> str:
