@@ -116,8 +116,10 @@ while running:
     if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL:
         create_path(control, boat)
 
+    total_power = 0
     for windmill in windfarms:
         windmill.step()
+        total_power += windmill.data["Power"]
 
     # Create legend
     box_size = (int(WIDTH / 3), int(HEIGHT / 2.2))
@@ -136,6 +138,29 @@ while running:
         text = font.render(fault["name"], 1, (0, 0, 0))
         screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
+
+    # Create data graphic legend thing
+    data_graphic_box = (175, 175)
+    # Draw Box
+    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((0, 0), data_graphic_box), width=2)
+    # Write Title
+    text = pygame.font.Font('freesansbold.ttf', 25).render("Data", 1, (0, 0, 0))
+    screen.blit(text, (int(data_graphic_box[0]/2 - text.get_width() + 20) , 5))
+    # Show Wind Speed
+    wind_speed = windfarms[0].data["Wind Speed"]
+    font = pygame.font.Font('freesansbold.ttf', 15)
+    text = font.render("Wind Speed: "+str(wind_speed) + " m/s", 1, (0, 0, 0))
+    screen.blit(text, (5, 30))
+    # Show Total Power
+    text = font.render("Total Power: "+str(int(total_power/ 1000000)) + " MW", 1, (0, 0, 0))
+    screen.blit(text, (5, 45))
+    # Wind Direction
+    wind_direction = windfarms[0].data["Wind Direction"]
+    arrow = pygame.image.load('./sprites/up-arrow.png')
+    arrow = pygame.transform.rotate(arrow, 360 - int(wind_direction))
+    screen.blit(arrow, (84 - int(arrow.get_width()/2), 120 - int(arrow.get_height()/2)))
+    text = font.render("Direction:" + str(wind_direction), 1, (0, 0, 0))
+    screen.blit(text, (5, 60))
 
     # Update the display
     pygame.display.flip()
