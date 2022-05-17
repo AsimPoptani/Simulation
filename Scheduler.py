@@ -13,13 +13,15 @@ from cmath import inf
 from traceback import print_tb
 from ortools.sat.python import cp_model
 import random
+from tqdm import tqdm
 
 class SchedulerCallback(cp_model.CpSolverSolutionCallback):
     def __init__(self):
         cp_model.CpSolverSolutionCallback.__init__(self)
         pass
 
-
+# Windmill [(1,2), (3,4), (5,6)]
+# faulty_windmills_index =[0]
 class BoatScheduler:
     def __init__(self, windmills:list, x_bound:int, y_bound:int, boat_range:int, max_boat_speed:int, faulty_windmills_index:list,horizon=100,return_to_coastal=True,start_at_coastal=True,coastal=(0,0)):
         self._model=cp_model.CpModel()
@@ -103,7 +105,7 @@ class BoatScheduler:
     def _set_bonus_windmills(self):
         bonus_windmills=self._model.NewIntVar(0,len(self._windmills),'bonus_windmills')
         bonus_bools=[]
-        for index_of_windmill in range(len(self._windmills)):
+        for index_of_windmill in tqdm(range(len(self._windmills))):
             # Check if the windmill is broken
             if index_of_windmill in self._faulty_windmills_index:
                 continue
@@ -152,27 +154,35 @@ class BoatScheduler:
 
     def setup_model(self) -> cp_model.CpModel:
         # Init the pos
+        print('Init the pos')
         self._init_pos()
         # Start at the coastal location
         if self.__start_at_coastal:
+            print('Start at the coastal location')
             self._start_at_coastal()
         
         # Return to coastal if specified
         if self.__return_to_coastal:
+            print('Return to coastal if specified')
             self._return_to_coastal()
         
         # Set pace 
+        print('Set pace')
         self._set_pace()
 
         # Go through each broken windmill once
+        print('Go through each broken windmill once')
         self._go_through_broken_windmills()
 
         # Set bonus windmills
-        self._bonus_windmills=self._set_bonus_windmills()
+        print('Set bonus windmills')
+        # self._bonus_windmills=self._set_bonus_windmills()
 
         # Maximize the number of windmills visited
-        self._model.Maximize(self._bonus_windmills)
-    
+        print('Maximize the number of windmills visited')
+        # self._model.Maximize(self._bonus_windmills)
+
+        print('Model setup done')
         return self._model
         
             
@@ -305,60 +315,54 @@ class DronesScheduler():
 
 ####### Example
 
-horizon=30
-boatmodel = cp_model.CpModel()
-x_bound,y_bound=10,10
-boat_range=1
-max_boat_speed=2
-windmills=[]
-num_windmills=10
-num_faulty_windmills=2
-index_of_faulty_windmills=[]
+# horizon=30
+# boatmodel = cp_model.CpModel()
+# x_bound,y_bound=10,10
+# boat_range=1
+# max_boat_speed=2
+# windmills=[]
+# num_windmills=10
+# num_faulty_windmills=2
+# index_of_faulty_windmills=[]
 
-random.seed(1)
+# random.seed(1)
 
-###### DATA
+# ###### DATA
 
-# Create windmills randomly
-for i in range(num_windmills):
-    x=random.randint(0,x_bound)
-    y=random.randint(0,y_bound)
-    # Check if the windmill is already there
-    while (x,y) in windmills:
-        x=random.randint(0,x_bound)
-        y=random.randint(0,y_bound)
-    windmills.append((x,y))
+# # Create windmills randomly
+# for i in range(num_windmills):
+#     x=random.randint(0,x_bound)
+#     y=random.randint(0,y_bound)
+#     # Check if the windmill is already there
+#     while (x,y) in windmills:
+#         x=random.randint(0,x_bound)
+#         y=random.randint(0,y_bound)
+#     windmills.append((x,y))
 
-for i in range(num_faulty_windmills):
-    # Choose a random index of windmills
-    index=random.randint(0,num_windmills-1)
-    # Check if the windmill index is already there
-    while index in index_of_faulty_windmills:
-        index=random.randint(0,num_windmills-1)
-    index_of_faulty_windmills.append(index)
+# for i in range(num_faulty_windmills):
+#     # Choose a random index of windmills
+#     index=random.randint(0,num_windmills-1)
+#     # Check if the windmill index is already there
+#     while index in index_of_faulty_windmills:
+#         index=random.randint(0,num_windmills-1)
+#     index_of_faulty_windmills.append(index)
 
 
-# Scheduler
-boat=BoatScheduler(windmills,x_bound,y_bound,boat_range,max_boat_speed,index_of_faulty_windmills,horizon,True,True,(0,0))
-model=boat.setup_model()
+# # Scheduler
+# boat=BoatScheduler(windmills,x_bound,y_bound,boat_range,max_boat_speed,index_of_faulty_windmills,horizon,True,True,(0,0))
+# model=boat.setup_model()
 
-solver = cp_model.CpSolver()
-status = solver.Solve(model)
-print(status==cp_model.FEASIBLE,status==cp_model.OPTIMAL)
-# Loop through time horizon
-for time in range(horizon):
-    # Print location
-    print(solver.Value(boat._x_pos[time]),solver.Value(boat._y_pos[time]))
+# solver = cp_model.CpSolver()
+# status = solver.Solve(model)
+# print(status==cp_model.FEASIBLE,status==cp_model.OPTIMAL)
+# # Loop through time horizon
+# #  x_pos and y_pos into boat_path [(x,y),(x,y),...]
+# boat_path=[]
+# for time in range(horizon):
+#     boat_path.append((solver.Value(boat._x_pos[time]),solver.Value(boat._y_pos[time])))
 
-print(solver.Value(boat._bonus_windmills))
+# print(boat_path)
 
-#  x_pos and y_pos into boat_path [(x,y),(x,y),...]
-boat_path=[]
-for time in range(horizon):
-    boat_path.append((solver.Value(boat._x_pos[time]),solver.Value(boat._y_pos[time])))
-
-print(boat_path)
-
-drone_scheduler=DronesScheduler(num_drones=1,windmills=windmills,boat_path=boat_path,index_priority_windmills=index_of_faulty_windmills,max_distance_from_boat=10,fuel=10,max_fuel=10,charge_rate=1,discharge_rate=2)
-drone_scheduler.setup()
-print(drone_scheduler._model)
+# drone_scheduler=DronesScheduler(num_drones=1,windmills=windmills,boat_path=boat_path,index_priority_windmills=index_of_faulty_windmills,max_distance_from_boat=10,fuel=10,max_fuel=10,charge_rate=1,discharge_rate=2)
+# drone_scheduler.setup()
+# print(drone_scheduler._model)
