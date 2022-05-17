@@ -120,19 +120,22 @@ while running:
         windmill.step()
 
     # Create legend
-    box_size = (int(WIDTH / 5), int(HEIGHT / 3))
+    box_size = (int(WIDTH / 3), int(HEIGHT / 2.2))
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((WIDTH - box_size[0], HEIGHT - box_size[1]), box_size), width=2)
     dot_pos = 0
+    font = pygame.font.Font('freesansbold.ttf', 25)
+    text = font.render("Faults", 1, (0, 0, 0))
+    screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
     for fault in FAULTS:
         hue_diff = 0.9 / len(FAULTS)
         hue = fault["id"] * hue_diff
         colour = hsv_to_rgb(hue, 1, 1)
         colour = tuple(map(lambda x: round(x * 255), colour))
-        pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 10, HEIGHT - box_size[1] + 10 + dot_pos), 5)
-        font = pygame.font.Font('freesansbold.ttf', 10)
+        pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 10, HEIGHT - box_size[1] + 37 + dot_pos), 8)
+        font = pygame.font.Font('freesansbold.ttf', 22)
         text = font.render(fault["name"], 1, (0, 0, 0))
-        screen.blit(text, (WIDTH - box_size[0] + 18, HEIGHT - box_size[1] + 5 + dot_pos))
-        dot_pos += int((box_size[1] - 5) / len(FAULTS))
+        screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
+        dot_pos += int((box_size[1] - 30) / len(FAULTS))
 
     # Update the display
     pygame.display.flip()
