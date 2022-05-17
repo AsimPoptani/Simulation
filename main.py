@@ -85,11 +85,11 @@ while running:
         battery = None
         power = None
         if type(sprite) is SubmersiveSprite:
-            prob = sprite.getProb()
             battery = sprite.getBattery()
         if type(sprite) is BoatSprite:
             battery = sprite.getBattery()
         if type(sprite) is WindmillSprite:
+            prob = sprite.getProb()
             power = sprite.getPower()
         
         # Update sprite for animation

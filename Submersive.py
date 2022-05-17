@@ -139,10 +139,6 @@ class SubmersiveSprite(Sprite.Sprite):
     def getName(self):
         text = self.set_text(self.submersive.name, 0, 0, 10)[0]
         return text
-    
-    def getProb(self):
-        text = None
-        return text
 
     def debug(self):
         text = self.set_text(str(self.submersive), 0, 0, 10)[0]
