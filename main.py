@@ -5,7 +5,7 @@ from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES, BOAT_MAX_FUEL
 from locations import locations
 from faults import FAULTS
 from colorsys import hsv_to_rgb
-
+from Submersive import SubmersiveSprite
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame
@@ -138,6 +138,53 @@ while running:
         text = font.render(fault["name"], 1, (0, 0, 0))
         screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
+
+    
+    # Create summary box surface
+    summary_box = (300,100)
+    summary_box_surface = pygame.Surface(summary_box)
+    # White background
+    summary_box_surface.fill((255, 255, 255))
+    # Add text "Ship summary"
+    font = pygame.font.Font('freesansbold.ttf', 15)
+    text = font.render("Ship summary", 1, (0, 0, 0))
+    summary_box_surface.blit(text,(0,0),text.get_rect())
+
+    # Get ship battery level
+    battery_level = boat.fuel_level
+
+    # Get boat sprite
+    boat_sprite = BoatSprite(boat)
+    battery_icon = boat_sprite.getBattery()
+
+    # Add text "Total power"
+    font = pygame.font.Font('freesansbold.ttf', 10)
+    text = font.render(f"Total power:{(battery_level/BOAT_MAX_FUEL)*100}%", 1, (0, 0, 0))
+    summary_box_surface.blit(text,(20,20),text.get_rect())
+
+    # Add Icon next to Total power
+    summary_box_surface.blit(battery_icon,(0,15))
+
+
+    
+    # Number of drones out
+    # Count number of drones out
+    num_out = 0
+    for drone in drones:
+        if drone.state == VehicleStates.MOVESTATE or drone.state == VehicleStates.HOLDSTATE:
+            num_out += 1
+
+    text=font.render(f"Drones out:{len(drones)-num_out}", 1, (0, 0, 0))
+    summary_box_surface.blit(text,(20,40),text.get_rect())
+
+    # Get image of drone
+    drone_sprite=SubmersiveSprite(drones[0])
+    # Add Icon next to drones out
+    summary_box_surface.blit(drone_sprite.image,(0,35))
+
+    # Blit summary box to screen
+    screen.blit(summary_box_surface, (0, HEIGHT - summary_box[1]))
+
 
     # Create data graphic legend thing
     data_graphic_box = (175, 175)
