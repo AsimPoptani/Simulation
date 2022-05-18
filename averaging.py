@@ -1,7 +1,10 @@
 # Detects which wind turbines are faulty based on the n nearest neighbours
 from Windmill import Windmill
+from config import ROTOR_RADIUS, MAX_POWER, AIR_DENSITY, TURBINE_HEIGHT
 from math import sqrt
 import numpy as np
+
+POWER_COEFFICIENT = 0.4
 
 def distance(x1, y1, x2, y2):
     """Euclidean distance between to points."""
@@ -34,8 +37,14 @@ class Averaging():
         # Check if the target_turbine's vibrations data points are less than the average
         # Use median to prevent being masssively affected by outliers
         diff = selected_turbine_vib - np.median(self.vibrations)
-        prob = round(max(0,min(24 * diff, 99)))
+        prob = round(max(0,min(20 * diff, 99)))
         if selected_turbine_vib > 3:
+            prob += 10
+
+        area = np.pi * (ROTOR_RADIUS**2)
+        expected_power = round((0.5 * AIR_DENSITY * area * (self.target_turbine.data["Wind Speed"]**3) * POWER_COEFFICIENT),2)
+        expected_power = min(expected_power, MAX_POWER)
+        if self.target_turbine.data["Power"] < expected_power:
             prob += 10
         return round(min(prob, 99))
             
