@@ -2,7 +2,7 @@ import random, pygame
 from math import sqrt
 import random
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY, TIME_TO_NEXT_INSPECTION
 from Weather import Datagen
 from faults import FAULTS
 import Sprite
@@ -39,6 +39,9 @@ class Windmill():
         self.data["Wind Direction"] = self.wind_s_d[1]
         self.data["Power"] = 0
         self.data["Vibration"] = 0
+        # time since last inspection in hours
+        self.time_to_inspection = 0
+
         if name is None:
             self.name = "Windmill_" + str(Windmill.COUNTER)
             Windmill.COUNTER += 1
@@ -56,6 +59,9 @@ class Windmill():
                     self.faults.append(fault)
                     print('Windmill',self.name, 'developed fault', fault["name"], 'priority', fault["priority"])
                     return
+        # decrease time to next inspection
+        if self.time_to_inspection > 0:
+            self.time_to_inspection -= 1
 
     # Update data like windspeed only every x seconds (needs calculation)
     def update_data(self):
@@ -102,15 +108,20 @@ class Windmill():
         return len(self.faults) > 0
 
     # TODO change to inspect_fault pops all and sets status to inspected
-    def fix_fault(self):
+    def inspect_fault(self):
         self.faults.pop(0)
-
 
     def collision(self, x, y, radius) -> bool:
         """is the given x and y position and radius within this windmill's position ± rotor radius ?"""
         distance = sqrt(pow(x - self.pos[0], 2) + pow(y - self.pos[1], 2))
         radii = radius + ROTOR_RADIUS
         return distance < radii
+
+    def inspected_turbine(self):
+        self.time_to_inspection = TIME_TO_NEXT_INSPECTION
+
+    def needs_inspection(self):
+        return not self.time_to_inspection <= 0
 
     def __str__(self) -> str:
         return f"Windmill at {self.pos} \n with faults: {self.faults}"
@@ -126,14 +137,19 @@ class WindmillSprite(Sprite.Sprite):
         # List of images for animation
         self.play = True
         # Images for animation
-        self.sprites = [pygame.image.load('./sprites/wind-turbine1.png'), 
-        pygame.image.load('./sprites/wind-turbine2.png'),
-        pygame.image.load('./sprites/wind-turbine3.png'),
-        pygame.image.load('./sprites/wind-turbine4.png'),
-        pygame.image.load('./sprites/wind-turbine5.png'),
-        pygame.image.load('./sprites/wind-turbine6.png')]
+        self.frames = 6
+        self.sprites = []
+        for i in range(self.frames):
+            path = './sprites/wind-turbine' + str(i + 1) + '.png'
+            image = pygame.image.load(path)
+            self.sprites.append(image)
+        for i in range(self.frames):
+            path = './sprites/inspected_wind-turbine' + str(i + 1) + '.png'
+            image = pygame.image.load(path)
+            self.sprites.append(image)
         # Current image index
         self.vis_sprite = 0
+        self.counter = 0
         # Current image
         self.image = self.sprites[self.vis_sprite]
         self.rect = self.image.get_rect()
@@ -150,12 +166,17 @@ class WindmillSprite(Sprite.Sprite):
                 hue_diff = 0.9 / len(FAULTS)
                 hue = fault["id"] * hue_diff
                 colour = hsv_to_rgb(hue, 1, 1)
-                colour = tuple(map(lambda x: round(x * 255), colour))
+                colour = tuple(map(lambda y: round(y * 255), colour))
                 pygame.draw.circle(self.image, colour, (x, 2), 2)
                 x += 5
             self.play = False
         else:
-            self.image = self.sprites[int(self.vis_sprite)]
+            '''
+            if self.windmill.needs_inspection():
+                self.image = self.sprites[self.vis_sprite + self.frames]
+            else:
+                self.image = self.sprites[self.vis_sprite]
+            '''
             # clear all color circles if no faults
             for x in range(2, len(self.windmill.potential_faults) * 5, 5):
                 pygame.draw.circle(self.image, (0, 0, 0, 0), (x, 2), 2)
@@ -164,11 +185,14 @@ class WindmillSprite(Sprite.Sprite):
 
     # Update to change sprite for animation
     def update(self):
-        if (self.play):
-            self.vis_sprite += 0.5
-            if (self.vis_sprite >= len(self.sprites)):
-                self.vis_sprite = 0
-            self.image = self.sprites[int(self.vis_sprite)]
+        if self.play:
+            self.counter += 1
+            if self.counter % 2 == 0:
+                self.vis_sprite = (self.vis_sprite + 1) % self.frames
+            if self.windmill.needs_inspection():
+                self.image = self.sprites[self.vis_sprite + self.frames]
+            else:
+                self.image = self.sprites[self.vis_sprite]
 
     def getPower(self):
         if self.windmill.data["Power"] > 5600000:

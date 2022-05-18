@@ -73,6 +73,7 @@ class Submersive(Vehicle):
             if self.target.has_fault():
                 self.detect()
             else:
+                self.target.inspected_turbine()
                 self.target = None
                 self.next_target()
         elif self.state == VehicleStates.RETURNSTATE:
