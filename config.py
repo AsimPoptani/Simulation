@@ -45,7 +45,7 @@ BOAT_MAX_FUEL = 120 * 24
 # meters per tick
 BOAT_MAX_VELOCITY = 20 * 1000
 # number of drones per boat
-BOAT_N_DRONES = 40
+BOAT_N_DRONES = 20
 
 # ticks
 DATA_UPDATE_INTERVAL = 20
