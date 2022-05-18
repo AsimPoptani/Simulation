@@ -100,11 +100,13 @@ class Boat(Vehicle):
                         self.set_detect_state()
                     else:
                         self.hours_at_sea += 1
+                        self.fuel_level -= 1
                 else:
                     if self.move(self.target, BOAT_RADIUS):
                         self.set_detect_state()
                     else:
                         self.hours_at_sea += 1
+                        self.fuel_level -= 1
         elif self.state == VehicleStates.DETECTSTATE:
             if self.drones_deployed == 0:
                 max_distance = MAX_SCAN_DISTANCE
