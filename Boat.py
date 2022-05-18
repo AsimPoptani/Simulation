@@ -90,9 +90,7 @@ class Boat(Vehicle):
                 self.windfarm = self.windfarm_cache.copy()
 
             if self.fuel_level < BOAT_MAX_FUEL:
-                self.fuel_level += 4
-            else:
-                self.fuel_level = BOAT_MAX_FUEL
+                self.fuel_level = min(self.fuel_level + 4, BOAT_MAX_FUEL)
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if type(self.target) is Windmill:
