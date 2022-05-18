@@ -118,7 +118,7 @@ class SubmersiveSprite(Sprite.Sprite):
 
         return self.image
 
-    def getBattery(self):
+    def getPower(self):
         percentage = (self.submersive.fuel_level / DRONE_MAX_BATTERY) * 100
         if percentage > (100 + 75) / 2:
             return pygame.image.load('./sprites/battery-100.png')

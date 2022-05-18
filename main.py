@@ -89,10 +89,8 @@ while running:
         prob = None
         battery = None
         power = None
-        if type(sprite) is SubmersiveSprite:
-            battery = sprite.getBattery()
-        if type(sprite) is BoatSprite:
-            battery = sprite.getBattery()
+        if type(sprite) is SubmersiveSprite or type(sprite) is BoatSprite:
+            battery = sprite.getPower()
         if type(sprite) is WindmillSprite:
             prob = sprite.getProb()
             power = sprite.getPower()
@@ -160,7 +158,7 @@ while running:
 
     # Get boat sprite
     boat_sprite = BoatSprite(boat)
-    battery_icon = boat_sprite.getBattery()
+    battery_icon = boat_sprite.getPower()
 
     # Add text "Total power"
     font = pygame.font.Font('freesansbold.ttf', 15)
