@@ -59,9 +59,7 @@ class Submersive(Vehicle):
                 self.pos = self.adv.pos  # drone is onboard the ADV
                 self.distance_travelled = 0  # reset distance
                 if self.fuel_level < DRONE_MAX_BATTERY:
-                    self.fuel_level += DRONE_MAX_VELOCITY
-                else:
-                    self.fuel_level = DRONE_MAX_BATTERY  # don't overshoot
+                    self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY, DRONE_MAX_BATTERY)
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None and self.fuel_level > 0:
                 if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
