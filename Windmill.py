@@ -27,7 +27,7 @@ class Windmill():
         self.pos = position
         self.faults=[]
         # Store probability of fault after inspection
-        self.fault_prob = 0
+        self.fault_prob = -1
         # Data timer
         self.timer_counter = 0
         # Data generated from turbines WindSpeed in m/s, Wind direction in degrees, power in Watts, Vibration in m/s^2 (accerleration)
@@ -93,11 +93,11 @@ class Windmill():
                         self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.8,1) * 5 ,6)})
                         break
                     elif fault["name"] == "rotor-hub":
-                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.4,0.8) * 5 ,6)})
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.7,1) * 5 ,6)})
                         break
                     # No vibrational data information in the paper for the other faults so just some noise for the other faults
                     else:
-                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.3,0.7) * 5 ,6)})
+                        self.data.update({"Vibration": round(self.datagen.get_vibrations(self.data["Wind Speed"]) + random.uniform(0.6,0.9) * 5 ,6)})
                         break
             else:
                 self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
@@ -193,6 +193,7 @@ class WindmillSprite(Sprite.Sprite):
                 self.image = self.sprites[self.vis_sprite + self.frames]
             else:
                 self.image = self.sprites[self.vis_sprite]
+                self.windmill.fault_prob = -1
 
     def getPower(self):
         if self.windmill.data["Power"] > 5600000:
@@ -218,7 +219,7 @@ class WindmillSprite(Sprite.Sprite):
     # Text for probabilty
     def getProb(self):
         text = None
-        if self.windmill.fault_prob > 0:
+        if self.windmill.fault_prob >= 0:
             text = self.set_text(str(self.windmill.fault_prob) + "%", 0, 0, 9)[0]
         return text
 

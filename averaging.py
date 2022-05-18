@@ -32,12 +32,12 @@ class Averaging():
         self.vibrations.pop(0)
         
         # Check if the target_turbine's vibrations data points are less than the average
-        if selected_turbine_vib <= np.mean(self.vibrations) * 1.1:
-            return 10
-        else:
-            diff = selected_turbine_vib - np.mean(self.vibrations)
-            prob = min(38 * diff, 99)
-            return int(prob)
+        # Use median to prevent being masssively affected by outliers
+        diff = selected_turbine_vib - np.median(self.vibrations)
+        prob = round(max(0,min(24 * diff, 99)))
+        if selected_turbine_vib > 3:
+            prob += 10
+        return round(min(prob, 99))
             
             
 
