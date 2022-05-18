@@ -125,7 +125,7 @@ while running:
     box_size = (int(WIDTH / 3), int(HEIGHT / 2.2))
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((WIDTH - box_size[0], HEIGHT - box_size[1]), box_size), width=2)
     dot_pos = 0
-    font = pygame.font.Font('freesansbold.ttf', 25)
+    font = pygame.font.Font('freesansbold.ttf', 15)
     text = font.render("Faults", 1, (0, 0, 0))
     screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
     for fault in FAULTS:
@@ -134,7 +134,7 @@ while running:
         colour = hsv_to_rgb(hue, 1, 1)
         colour = tuple(map(lambda x: round(x * 255), colour))
         pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 10, HEIGHT - box_size[1] + 37 + dot_pos), 8)
-        font = pygame.font.Font('freesansbold.ttf', 22)
+        font = pygame.font.Font('freesansbold.ttf', 15)
         text = font.render(fault["name"], 1, (0, 0, 0))
         screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
@@ -158,8 +158,8 @@ while running:
     battery_icon = boat_sprite.getBattery()
 
     # Add text "Total power"
-    font = pygame.font.Font('freesansbold.ttf', 10)
-    text = font.render(f"Total power:{(battery_level/BOAT_MAX_FUEL)*100}%", 1, (0, 0, 0))
+    font = pygame.font.Font('freesansbold.ttf', 15)
+    text = font.render(f"Total power:{((battery_level/BOAT_MAX_FUEL)*100):.2f}%", 1, (0, 0, 0))
     summary_box_surface.blit(text,(20,20),text.get_rect())
 
     # Add Icon next to Total power
@@ -174,7 +174,7 @@ while running:
         if drone.state == VehicleStates.MOVESTATE or drone.state == VehicleStates.HOLDSTATE:
             num_out += 1
 
-    text=font.render(f"Drones out:{len(drones)-num_out}", 1, (0, 0, 0))
+    text=font.render(f"Drones out:{len(drones)-num_out} | Drones in: {num_out}", 1, (0, 0, 0))
     summary_box_surface.blit(text,(20,40),text.get_rect())
 
     # Get image of drone
@@ -189,10 +189,10 @@ while running:
     # Create data graphic legend thing
     data_graphic_box = (175, 175)
     # Draw Box
-    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((0, 0), data_graphic_box), width=2)
+    # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((0, 0), data_graphic_box), width=2)
     # Write Title
-    text = pygame.font.Font('freesansbold.ttf', 25).render("Data", 1, (0, 0, 0))
-    screen.blit(text, (int(data_graphic_box[0]/2 - text.get_width() + 20) , 5))
+    # text = pygame.font.Font('freesansbold.ttf', 25).render("Data", 1, (0, 0, 0))
+    # screen.blit(text, (int(data_graphic_box[0]/2 - text.get_width() + 20) , 5))
     # Show Wind Speed
     wind_speed = windfarms[0].data["Wind Speed"]
     font = pygame.font.Font('freesansbold.ttf', 15)
