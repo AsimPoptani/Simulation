@@ -107,7 +107,10 @@ class ControlRoom:
         positions = []
         timer = time_ns()
         for g in range(9, 0, -1):
-            print('finding groups of', g)
+            if len(windmills) > 0:
+                print('finding groups of', g)
+            else:
+                break
             for j in range(min_y, max_y, y_space // 8):
                 for i in range(min_x, max_x, x_space // 8):
                     turbines = list(filter(lambda k: distance(i, j, *k.pos[:2]) < MAX_SCAN_DISTANCE, windmills))
