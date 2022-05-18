@@ -59,6 +59,7 @@ class ControlRoom:
         self.windfarm = windfarm
         self.destinations = []
         self.pos = COASTAL_LOCATION
+        self.calculated_path = []
 
     def scan_farm(self):
         """return an ordered list of turbines sorted by distance and priority."""
@@ -103,6 +104,9 @@ class ControlRoom:
 
     def find_path(self):
         """find a path around the wind farm for the ADV"""
+        if self.calculated_path:
+            print("returning cached paths")
+            return self.calculated_path
         windmills = self.windfarm.copy()
         positions = []
         timer = time_ns()
@@ -121,14 +125,14 @@ class ControlRoom:
         timer = time_ns() - timer
         print(nanosecond_string(timer))
         print(len(windmills), 'turbines not covered.')
-        final_positions = []
+        self.calculated_path = []
         current, positions = positions[0], positions[1:]
-        final_positions.append(current)
+        self.calculated_path.append(current)
         while len(positions) > 0:
             positions.sort(key=lambda x: distance(current[0], current[1], x[0], x[1]))
             current, positions = positions[0], positions[1:]
-            final_positions.append(current)
-        return final_positions
+            self.calculated_path.append(current)
+        return self.calculated_path
 
     def nearest_n_targets(self, x, y, n):
         """return the nearest n Windmills to the given position"""
