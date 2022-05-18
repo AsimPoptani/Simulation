@@ -174,12 +174,9 @@ while running:
     
     # Number of drones out
     # Count number of drones out
-    num_out = 0
-    for drone in drones:
-        if drone.state == VehicleStates.MOVESTATE or drone.state == VehicleStates.HOLDSTATE:
-            num_out += 1
+    num_out = boat.drones_deployed - boat.drones_returned
 
-    text=font.render(f"Drones out:{len(drones)-num_out} | Drones in: {num_out}", 1, (0, 0, 0))
+    text=font.render(f"Drones out:{num_out} | Drones in: {len(drones)-num_out}", 1, (0, 0, 0))
     summary_box_surface.blit(text,(20,40),text.get_rect())
 
     # Get image of drone
