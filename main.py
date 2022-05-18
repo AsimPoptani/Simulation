@@ -8,8 +8,13 @@ from colorsys import hsv_to_rgb
 from Submersive import SubmersiveSprite
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
-import pygame
+import pygame, datetime
 
+# Current time
+current_time = datetime.datetime.now()
+
+# Remove hours, mins, seconds to 9:00
+current_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
 
 def initialise_windfarm(sim_sprites) -> list [Windmill]:
     windfarm = []
@@ -208,6 +213,15 @@ while running:
     screen.blit(arrow, (84 - int(arrow.get_width()/2), 120 - int(arrow.get_height()/2)))
     text = font.render("Direction:" + str(wind_direction), 1, (0, 0, 0))
     screen.blit(text, (5, 60))
+
+
+
+    # Draw date and time
+    text=font.render(current_time.strftime("%d/%m/%Y %H:%M:%S"), 1, (0, 0, 0))
+    # Step time
+    current_time += datetime.timedelta(hours=1)
+    # Center text
+    screen.blit(text,(WIDTH - text.get_width() - 5,5))
 
     # Update the display
     pygame.display.flip()
