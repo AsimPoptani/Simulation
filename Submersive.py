@@ -100,22 +100,19 @@ class SubmersiveSprite(Sprite.Sprite):
         # Add sprite
         # TODO update image to a new image
         self.image = pygame.image.load('./sprites/subblack.png')
+        self.sprites = [None] * len(VehicleStates.__members__)
+        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/subblack.png')
+        self.sprites[VehicleStates.MOVESTATE.value] = pygame.image.load('./sprites/subred.png')
+        self.sprites[VehicleStates.DETECTSTATE.value] = pygame.image.load('./sprites/subgreen.png')
+        self.sprites[VehicleStates.RETURNSTATE.value] = pygame.image.load('./sprites/subred.png')
+        self.image = self.sprites[VehicleStates.HOLDSTATE.value]
         self.rect = self.image.get_rect()
         self.submersive = submersive
 
     def getSprite(self):
         if self.submersive.hide:
             return None
-        if self.submersive.state == VehicleStates.HOLDSTATE:
-            self.image = pygame.image.load('./sprites/subblack.png')
-        elif self.submersive.state == VehicleStates.MOVESTATE:
-            self.image = pygame.image.load('./sprites/subred.png')
-        elif self.submersive.state == VehicleStates.DETECTSTATE:
-            self.image = pygame.image.load('./sprites/subgreen.png')
-        elif self.submersive.state == VehicleStates.RETURNSTATE:
-            self.image = pygame.image.load('./sprites/subred.png')
-        # Merge the text with the sprite put the text above the sprite
-
+        self.image = self.sprites[self.submersive.state.value]
         return self.image
 
     def getPower(self):
