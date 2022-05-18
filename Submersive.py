@@ -48,8 +48,6 @@ class Submersive(Vehicle):
         if self.detection_time > 0:
             self.detection_time -= 1
         else:
-            # Once inspected give prob of faulty
-            self.target.fault_prob = self.averaging.check_faulty(self.target,5)
             self.target.faults = []
 
     def step(self):
@@ -70,6 +68,8 @@ class Submersive(Vehicle):
                     self.set_detect_state()
                 self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
         elif self.state == VehicleStates.DETECTSTATE:
+            # Give turbine faulty or not faulty based on fault detection
+            self.target.fault_prob = self.averaging.check_faulty(self.target,25)
             if self.target.has_fault():
                 self.detect()
             else:
