@@ -172,7 +172,7 @@ while running:
     
     # Number of drones out
     # Count number of drones out
-    num_out = boat.drones_deployed - boat.drones_returned
+    num_out = BOAT_N_DRONES - len(boat.drones)
 
     text=font.render(f"Drones out:{num_out} | Drones in: {BOAT_N_DRONES-num_out}", 1, (0, 0, 0))
     summary_box_surface.blit(text,(20,40),text.get_rect())
