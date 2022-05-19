@@ -59,9 +59,7 @@ class Submersive(Vehicle):
                 self.pos = self.adv.pos  # drone is onboard the ADV
                 self.distance_travelled = 0  # reset distance
                 if self.fuel_level < DRONE_MAX_BATTERY:
-                    self.fuel_level += DRONE_MAX_VELOCITY
-                else:
-                    self.fuel_level = DRONE_MAX_BATTERY  # don't overshoot
+                    self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY, DRONE_MAX_BATTERY)
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None and self.fuel_level > 0:
                 if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
@@ -100,25 +98,22 @@ class SubmersiveSprite(Sprite.Sprite):
         # Add sprite
         # TODO update image to a new image
         self.image = pygame.image.load('./sprites/subblack.png')
+        self.sprites = [None] * len(VehicleStates.__members__)
+        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/subblack.png')
+        self.sprites[VehicleStates.MOVESTATE.value] = pygame.image.load('./sprites/subred.png')
+        self.sprites[VehicleStates.DETECTSTATE.value] = pygame.image.load('./sprites/subgreen.png')
+        self.sprites[VehicleStates.RETURNSTATE.value] = pygame.image.load('./sprites/subred.png')
+        self.image = self.sprites[VehicleStates.HOLDSTATE.value]
         self.rect = self.image.get_rect()
         self.submersive = submersive
 
     def getSprite(self):
         if self.submersive.hide:
             return None
-        if self.submersive.state == VehicleStates.HOLDSTATE:
-            self.image = pygame.image.load('./sprites/subblack.png')
-        elif self.submersive.state == VehicleStates.MOVESTATE:
-            self.image = pygame.image.load('./sprites/subred.png')
-        elif self.submersive.state == VehicleStates.DETECTSTATE:
-            self.image = pygame.image.load('./sprites/subgreen.png')
-        elif self.submersive.state == VehicleStates.RETURNSTATE:
-            self.image = pygame.image.load('./sprites/subred.png')
-        # Merge the text with the sprite put the text above the sprite
-
+        self.image = self.sprites[self.submersive.state.value]
         return self.image
 
-    def getBattery(self):
+    def getPower(self):
         percentage = (self.submersive.fuel_level / DRONE_MAX_BATTERY) * 100
         if percentage > (100 + 75) / 2:
             return pygame.image.load('./sprites/battery-100.png')

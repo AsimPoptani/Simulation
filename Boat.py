@@ -90,9 +90,7 @@ class Boat(Vehicle):
                 self.windfarm = self.windfarm_cache.copy()
 
             if self.fuel_level < BOAT_MAX_FUEL:
-                self.fuel_level += 4
-            else:
-                self.fuel_level = BOAT_MAX_FUEL
+                self.fuel_level = min(self.fuel_level + 4, BOAT_MAX_FUEL)
         elif self.state == VehicleStates.MOVESTATE:
             if self.target is not None:
                 if type(self.target) is Windmill:
@@ -100,11 +98,13 @@ class Boat(Vehicle):
                         self.set_detect_state()
                     else:
                         self.hours_at_sea += 1
+                        self.fuel_level -= 1
                 else:
                     if self.move(self.target, BOAT_RADIUS):
                         self.set_detect_state()
                     else:
                         self.hours_at_sea += 1
+                        self.fuel_level -= 1
         elif self.state == VehicleStates.DETECTSTATE:
             if self.drones_deployed == 0:
                 max_distance = MAX_SCAN_DISTANCE
@@ -143,21 +143,20 @@ class BoatSprite(Sprite.Sprite):
         # Add sprite
         # TODO update image to a new image
         self.image = pygame.image.load('./sprites/boat-black.png')
+        self.sprites = [None] * len(VehicleStates.__members__)
+        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/boat-black.png')
+        self.sprites[VehicleStates.MOVESTATE.value] = pygame.image.load('./sprites/boat-red.png')
+        self.sprites[VehicleStates.DETECTSTATE.value] = pygame.image.load('./sprites/boat-blue.png')
+        self.sprites[VehicleStates.RETURNSTATE.value] = pygame.image.load('./sprites/boat-red.png')
+        self.image = self.sprites[VehicleStates.HOLDSTATE.value]
         self.rect = self.image.get_rect()
         self.boat = boat
 
     def getSprite(self):
-        if self.boat.state == VehicleStates.HOLDSTATE:
-            self.image = pygame.image.load('./sprites/boat-black.png')
-        elif self.boat.state == VehicleStates.MOVESTATE:
-            self.image = pygame.image.load('./sprites/boat-red.png')
-        elif self.boat.state == VehicleStates.DETECTSTATE:
-            self.image = pygame.image.load('./sprites/boat-blue.png')
-        elif self.boat.state == VehicleStates.RETURNSTATE:
-            self.image = pygame.image.load('./sprites/boat-red.png')
+        self.image = self.sprites[self.boat.state.value]
         return self.image
 
-    def getBattery(self):
+    def getPower(self):
         percentage = (self.boat.fuel_level / BOAT_MAX_FUEL) * 100
         if percentage > (100 + 75) / 2:
             return pygame.image.load('./sprites/battery-100.png')

@@ -1,3 +1,4 @@
+import imp
 from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
 from Vehicle import VehicleStates
@@ -9,16 +10,22 @@ from Submersive import SubmersiveSprite
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame, datetime,os
+from datetime import datetime, timedelta
 # Get pwd
 pwd = os.getcwd()
 # Os join Opens a file and returns a file object.
 url=os.path.join(pwd,"./OpenSans-Regular.ttf")
 
 # Current time
-current_time = datetime.datetime.now()
+# from time_utilities import NANOSECONDS_IN_HOUR, nanosecond_string
+from datetime import datetime
 
-# Remove hours, mins, seconds to 9:00
-current_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
+current_time = datetime.now()
+# Remove to 0:00:00
+current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+
 
 def initialise_windfarm(sim_sprites) -> list [Windmill]:
     windfarm = []
@@ -94,10 +101,8 @@ while running:
         prob = None
         battery = None
         power = None
-        if type(sprite) is SubmersiveSprite:
-            battery = sprite.getBattery()
-        if type(sprite) is BoatSprite:
-            battery = sprite.getBattery()
+        if type(sprite) is SubmersiveSprite or type(sprite) is BoatSprite:
+            battery = sprite.getPower()
         if type(sprite) is WindmillSprite:
             prob = sprite.getProb()
             power = sprite.getPower()
@@ -165,7 +170,7 @@ while running:
 
     # Get boat sprite
     boat_sprite = BoatSprite(boat)
-    battery_icon = boat_sprite.getBattery()
+    battery_icon = boat_sprite.getPower()
 
     # Add text "Total power"
     # font = pygame.font.Font('freesansbold.ttf', 15)
@@ -179,12 +184,9 @@ while running:
     
     # Number of drones out
     # Count number of drones out
-    num_out = 0
-    for drone in drones:
-        if drone.state == VehicleStates.MOVESTATE or drone.state == VehicleStates.HOLDSTATE:
-            num_out += 1
+    num_out = BOAT_N_DRONES - len(boat.drones)
 
-    text=font.render(f"Drones out:{len(drones)-num_out} | Drones in: {num_out}", 1, (0, 0, 0))
+    text=font.render(f"Drones out:{num_out} | Drones in: {BOAT_N_DRONES-num_out}", 1, (0, 0, 0))
     summary_box_surface.blit(text,(20,40),text.get_rect())
 
     # Get image of drone
@@ -223,13 +225,14 @@ while running:
 
 
     # If current time is 1800 skip to next day to 9 am 
-    if current_time.hour == 18 and current_time.minute == 0:
-        current_time = current_time + datetime.timedelta(days=1)
+    if current_time.hour >= 18 :
+        current_time = current_time + timedelta(days=1)
         current_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
     # Draw date and time
+    # text=font.render(nanosecond_string(current_time), 1, (0, 0, 0))
     text=font.render(current_time.strftime("%d/%m/%Y %H:%M:%S"), 1, (0, 0, 0))
     # Step time
-    current_time += datetime.timedelta(hours=1)
+    current_time += timedelta(hours=1)
     # Center text
     screen.blit(text,(WIDTH - text.get_width() - 5,5))
 
