@@ -37,7 +37,7 @@ def nanosecond_string(nanoseconds):
         if milliseconds != 0:
             string += str(milliseconds) + " milliseconds "
             nanoseconds -= milliseconds * NANOSECONDS_IN_MILLISECOND
-        else:
+        elif nanoseconds != 0:
             string += str(nanoseconds) + " nanoseconds "
 
     return string

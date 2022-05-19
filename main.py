@@ -8,13 +8,13 @@ from colorsys import hsv_to_rgb
 from Submersive import SubmersiveSprite
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
-import pygame, datetime
+import pygame
 
 # Current time
-current_time = datetime.datetime.now()
+from time_utilities import NANOSECONDS_IN_HOUR, nanosecond_string
 
-# Remove hours, mins, seconds to 9:00
-current_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
+current_time = 0
+
 
 def initialise_windfarm(sim_sprites) -> list [Windmill]:
     windfarm = []
@@ -212,9 +212,9 @@ while running:
 
 
     # Draw date and time
-    text=font.render(current_time.strftime("%d/%m/%Y %H:%M:%S"), 1, (0, 0, 0))
+    text=font.render(nanosecond_string(current_time), 1, (0, 0, 0))
     # Step time
-    current_time += datetime.timedelta(hours=1)
+    current_time += NANOSECONDS_IN_HOUR
     # Center text
     screen.blit(text,(WIDTH - text.get_width() - 5,5))
 
