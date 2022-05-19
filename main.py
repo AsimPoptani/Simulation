@@ -8,7 +8,11 @@ from colorsys import hsv_to_rgb
 from Submersive import SubmersiveSprite
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
-import pygame, datetime
+import pygame, datetime,os
+# Get pwd
+pwd = os.getcwd()
+# Os join Opens a file and returns a file object.
+url=os.path.join(pwd,"./OpenSans-Regular.ttf")
 
 # Current time
 current_time = datetime.datetime.now()
@@ -63,6 +67,7 @@ create_path(control, boat)
 
 
 pygame.init()
+font=pygame.font.Font(url, 15)
 
 # Set up the drawing window
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -130,7 +135,7 @@ while running:
     box_size = (int(WIDTH / 3), int(HEIGHT / 2.2))
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((WIDTH - box_size[0], HEIGHT - box_size[1]), box_size), width=2)
     dot_pos = 0
-    font = pygame.font.Font('freesansbold.ttf', 15)
+    # font = pygame.font.Font('freesansbold.ttf', 15)
     text = font.render("Faults", 1, (0, 0, 0))
     screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
     for fault in FAULTS:
@@ -139,7 +144,7 @@ while running:
         colour = hsv_to_rgb(hue, 1, 1)
         colour = tuple(map(lambda x: round(x * 255), colour))
         pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 10, HEIGHT - box_size[1] + 37 + dot_pos), 8)
-        font = pygame.font.Font('freesansbold.ttf', 15)
+        # font = pygame.font.Font('freesansbold.ttf', 15)
         text = font.render(fault["name"], 1, (0, 0, 0))
         screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
@@ -151,7 +156,7 @@ while running:
     # White background
     summary_box_surface.fill((255, 255, 255))
     # Add text "Ship summary"
-    font = pygame.font.Font('freesansbold.ttf', 15)
+    # font = pygame.font.Font('freesansbold.ttf', 15)
     text = font.render("Ship summary", 1, (0, 0, 0))
     summary_box_surface.blit(text,(0,0),text.get_rect())
 
@@ -163,7 +168,7 @@ while running:
     battery_icon = boat_sprite.getBattery()
 
     # Add text "Total power"
-    font = pygame.font.Font('freesansbold.ttf', 15)
+    # font = pygame.font.Font('freesansbold.ttf', 15)
     text = font.render(f"Total power:{((battery_level/BOAT_MAX_FUEL)*100):.2f}%", 1, (0, 0, 0))
     summary_box_surface.blit(text,(20,20),text.get_rect())
 
@@ -200,7 +205,9 @@ while running:
     # screen.blit(text, (int(data_graphic_box[0]/2 - text.get_width() + 20) , 5))
     # Show Wind Speed
     wind_speed = windfarms[0].data["Wind Speed"]
-    font = pygame.font.Font('freesansbold.ttf', 15)
+    # Opensans font
+
+    # font = pygame.font.Font('freesansbold.ttf', 15)
     text = font.render("Wind Speed: "+str(wind_speed) + " m/s", 1, (0, 0, 0))
     screen.blit(text, (5, 30))
     # Show Total Power
@@ -215,7 +222,10 @@ while running:
     screen.blit(text, (5, 60))
 
 
-
+    # If current time is 1800 skip to next day to 9 am 
+    if current_time.hour == 18 and current_time.minute == 0:
+        current_time = current_time + datetime.timedelta(days=1)
+        current_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
     # Draw date and time
     text=font.render(current_time.strftime("%d/%m/%Y %H:%M:%S"), 1, (0, 0, 0))
     # Step time
