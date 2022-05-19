@@ -150,7 +150,8 @@ while running:
         colour = tuple(map(lambda x: round(x * 255), colour))
         pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 10, HEIGHT - box_size[1] + 37 + dot_pos), 8)
         # font = pygame.font.Font('freesansbold.ttf', 15)
-        text = font.render(fault["name"], 1, (0, 0, 0))
+        fault_text=fault['human']
+        text = font.render(fault_text, 1, (0, 0, 0))
         screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
 
