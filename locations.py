@@ -1,15 +1,17 @@
+from math import sqrt
+
 from config import N_WINDMILLS_X, N_WINDMILLS_Y, MAX_AREA_X, MAX_AREA_Y
-from config import DISTANCE_FROM_SHORE, COASTAL_LOCATION, DIRECTION_OF_WINDFARM
 from config import WINDFARM_WIDTH, WINDFARM_HEIGHT
-from math import sin, cos
 
 # the windfarm bottom left corner is the distance from the control centre / coast
-start_x = abs(COASTAL_LOCATION[0] + int(DISTANCE_FROM_SHORE * sin(DIRECTION_OF_WINDFARM)))
-start_y = abs(WINDFARM_HEIGHT - COASTAL_LOCATION[1] + int(DISTANCE_FROM_SHORE * cos(DIRECTION_OF_WINDFARM)))
+start_x = 7 * 1000
+start_y = 5 * 1000
 
 # the horizontal and vertical distances between windmills
 x_space = WINDFARM_WIDTH // N_WINDMILLS_X
 y_space = WINDFARM_HEIGHT // N_WINDMILLS_Y
+
+total_size = (WINDFARM_WIDTH * WINDFARM_HEIGHT) / 1000**2
 
 # the (generated) positions of all the windmills in meters
 locations = []
