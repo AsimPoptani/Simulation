@@ -52,6 +52,14 @@ def check_schedular_params(positions, x_bound, y_bound) -> bool:
     return valid
 
 
+def n_nearest_targets(windmill, windmills, n):
+    """return the nearest n Windmills to the given position"""
+    windmills = windmills.copy()
+    # sort by distance from the vehicle
+    windmills.sort(key=lambda i: distance(*windmill.pos, i.pos[0], i.pos[1]))
+    return windmills[:n]
+
+
 class ControlRoom:
 
     def __init__(self, vehicle, windfarm: list[Windmill]):
@@ -105,9 +113,7 @@ class ControlRoom:
     def new_path(self):
         windmills = self.windfarm.copy()
         position = centroid(windmills)
-        positions = []
-        for i in range(5):
-            positions.append(position)
+        positions = [position]
         return positions
 
     def find_path(self):

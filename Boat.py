@@ -18,10 +18,10 @@
 # Recieve drone
 # Charge drone
 
-from ControlRoom import distance
+from ControlRoom import distance, n_nearest_targets
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
-    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR
+    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR, BOAT_N_DRONES
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -58,21 +58,21 @@ class Boat(Vehicle):
         self.fuel_level = BOAT_MAX_FUEL
         # drones
         self.drones = []
+        self.auvs = []  # copy
         # number of drones deployed
         self.drones_deployed = 0
-        # number of drones returned from deployment
-        self.drones_returned = 0
         # Copy of entire Windfarm
         self.windfarm = windfarm.copy()
         # for restoring working copy
         self.windfarm_cache = windfarm.copy()
+        # work list
+        self.windmills = []
 
     def set_drones(self, drones):
         self.drones = drones
+        self.auvs = drones.copy()
 
     def set_drone_returned(self, drone):
-        self.drones_returned += 1
-        drone.hide = True
         self.drones.append(drone)
 
     def hold_state(self):
@@ -109,21 +109,43 @@ class Boat(Vehicle):
                     self.update_fuel_time()
 
     def detect_state(self):
-        if self.drones_deployed == 0:
+        if len(self.drones) == BOAT_N_DRONES and len(self.windmills) == 0 and self.drones_deployed == 0:
             max_distance = MAX_SCAN_DISTANCE
-            windmills = list(filter(lambda i: distance(*self.pos[:2], *i.pos[:2]) < max_distance, self.windfarm))
-            while len(windmills) > 0 and len(self.drones) > 0:
-                target, windmills = windmills[0], windmills[1:]
+            self.windmills = list(filter(lambda i: distance(*self.pos[:2], *i.pos[:2]) < max_distance, self.windfarm))
+            self.windmills.sort(key=lambda i: distance(*self.pos[:2], *i.pos[:2]), reverse=False)
+            while len(self.windmills) > 0 and len(self.drones) > 0:
+                targets = []
+                target, self.windmills = self.windmills[0], self.windmills[1:]
+                self.windfarm.remove(target)
+                targets.append(target)
+                additional = n_nearest_targets(target, self.windmills, 3)
+                for target in additional:
+                    self.windfarm.remove(target)
+                    self.windmills.remove(target)
+                    targets.append(target)
+
+                drone, self.drones = self.drones[0], self.drones[1:]
+                drone.set_targets(targets)
+                drone.hide = False
+                self.drones_deployed += 1
+            self.update_fuel_time()
+        elif len(self.windmills) > 0:
+            self.update_fuel_time()
+            while len(self.windmills) > 0 and len(self.drones) > 0:
+                target, self.windmills = self.windmills[0], self.windmills[1:]
                 self.windfarm.remove(target)
                 drone, self.drones = self.drones[0], self.drones[1:]
                 drone.set_target(target)
                 drone.hide = False
                 self.drones_deployed += 1
+            if not self.drones_in_communications_range():
+                print('Drones out of communications range !')
+        elif len(self.drones) != BOAT_N_DRONES:
             self.update_fuel_time()
-        elif self.drones_returned != self.drones_deployed:
-            self.update_fuel_time()
-        if self.drones_returned == self.drones_deployed:
-            self.drones_deployed, self.drones_returned = 0, 0
+            if not self.drones_in_communications_range():
+                print('Drones out of communications range !')
+        else:
+            self.drones_deployed = 0
             self.target = None
             self.next_target()
 
@@ -132,6 +154,17 @@ class Boat(Vehicle):
             self.set_hold_state()
         else:
             self.update_fuel_time()
+
+    def drones_in_communications_range(self) -> bool:
+        all_in_range = True
+        in_range_of_boat = False
+        for this in self.auvs:
+            in_range_of_boat |= distance(*this.pos[:2], *self.pos[:2]) < DRONE_MAX_COMMUNICATION_RANGE
+            in_range = list(filter(lambda i: distance(*this.pos[:2], *i.pos[:2]) < DRONE_MAX_COMMUNICATION_RANGE, self.auvs))
+            if len(in_range) == 0:
+                all_in_range = False
+                break
+        return all_in_range and in_range_of_boat
 
     def __str__(self) -> str:
         return f"Boat: {self.name} \n {self.pos} with state {self.state}"

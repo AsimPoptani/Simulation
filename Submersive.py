@@ -2,7 +2,7 @@
 from Vehicle import Vehicle, VehicleStates
 from Windmill import Windmill
 from config import DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS, \
-    ROTOR_RADIUS, BOAT_RADIUS, CIRCUMNAVIGATION_DISTANCE
+    ROTOR_RADIUS, BOAT_RADIUS, CIRCUMNAVIGATION_DISTANCE, TIME_SCALAR
 from display import x_to_pixels, y_to_pixels
 from averaging import Averaging
 import Sprite
@@ -60,15 +60,15 @@ class Submersive(Vehicle):
         if self in self.adv.drones:
             self.hide = True
             self.pos = self.adv.pos  # drone is onboard the ADV
-            self.distance_travelled = 0  # reset distance
-            if self.fuel_level < DRONE_MAX_BATTERY:
-                self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY, DRONE_MAX_BATTERY)
+            #self.distance_travelled = 0  # reset distance
+            if self.fuel_level < DRONE_MAX_BATTERY and self.adv.state != VehicleStates.DETECTSTATE:
+                self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY * TIME_SCALAR, DRONE_MAX_BATTERY)
 
     def move_state(self):
         if self.target is not None and self.fuel_level > 0:
             if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
                 self.set_detect_state()
-            self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
+            self.fuel_level -= DRONE_MAX_VELOCITY * TIME_SCALAR
 
     def detect_state(self):
         # Give turbine faulty or not faulty based on fault detection
@@ -85,7 +85,7 @@ class Submersive(Vehicle):
             if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
                 self.adv.set_drone_returned(self)
                 self.set_hold_state()
-            self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
+            self.fuel_level -= DRONE_MAX_VELOCITY * TIME_SCALAR
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
