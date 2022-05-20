@@ -75,6 +75,27 @@ class Vehicle:
             # And clear the new state
             self.new_state = None
 
+        if self.state == VehicleStates.HOLDSTATE:
+            self.hold_state()
+        elif self.state == VehicleStates.MOVESTATE:
+            self.move_state()
+        elif self.state == VehicleStates.DETECTSTATE:
+            self.detect_state()
+        elif self.state == VehicleStates.RETURNSTATE:
+            self.return_state()
+
+    def hold_state(self):
+        pass
+
+    def move_state(self):
+        pass
+
+    def detect_state(self):
+        pass
+
+    def return_state(self):
+        pass
+
     def move(self, destination, radius):
         # Get current position
         current_pos = self.pos[:2]

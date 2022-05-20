@@ -50,42 +50,42 @@ class Submersive(Vehicle):
         else:
             self.target.faults = []
 
-    def step(self):
-        super().step()
-
-        if self.state == VehicleStates.HOLDSTATE:
-            if self in self.adv.drones:
-                self.hide = True
-                self.pos = self.adv.pos  # drone is onboard the ADV
-                self.distance_travelled = 0  # reset distance
-                if self.fuel_level < DRONE_MAX_BATTERY:
-                    self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY, DRONE_MAX_BATTERY)
-        elif self.state == VehicleStates.MOVESTATE:
-            if self.target is not None and self.fuel_level > 0:
-                if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
-                    self.set_detect_state()
-                self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
-        elif self.state == VehicleStates.DETECTSTATE:
-            # Give turbine faulty or not faulty based on fault detection
-            self.target.fault_prob = self.averaging.check_faulty(self.target,25)
-            if self.target.has_fault():
-                self.detect()
-            else:
-                self.target.inspected_turbine()
-                self.target = None
-                self.next_target()
-        elif self.state == VehicleStates.RETURNSTATE:
-            if self.fuel_level > 0:
-                if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
-                    self.adv.set_drone_returned(self)
-                    self.set_hold_state()
-                self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
-
     def set_detect_state(self):
         for fault in self.target.faults:
             self.detection_time += fault["timeToDetect"]
         self.distance_travelled += CIRCUMNAVIGATION_DISTANCE
         super().set_detect_state()
+
+    def hold_state(self):
+        if self in self.adv.drones:
+            self.hide = True
+            self.pos = self.adv.pos  # drone is onboard the ADV
+            self.distance_travelled = 0  # reset distance
+            if self.fuel_level < DRONE_MAX_BATTERY:
+                self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY, DRONE_MAX_BATTERY)
+
+    def move_state(self):
+        if self.target is not None and self.fuel_level > 0:
+            if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
+                self.set_detect_state()
+            self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
+
+    def detect_state(self):
+        # Give turbine faulty or not faulty based on fault detection
+        self.target.fault_prob = self.averaging.check_faulty(self.target, 25)
+        if self.target.has_fault():
+            self.detect()
+        else:
+            self.target.inspected_turbine()
+            self.target = None
+            self.next_target()
+
+    def return_state(self):
+        if self.fuel_level > 0:
+            if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
+                self.adv.set_drone_returned(self)
+                self.set_hold_state()
+            self.fuel_level = DRONE_MAX_BATTERY - self.distance_travelled
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
