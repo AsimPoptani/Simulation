@@ -102,6 +102,14 @@ class ControlRoom:
         windmills = [windmills[0]]
         return windmills
 
+    def new_path(self):
+        windmills = self.windfarm.copy()
+        position = centroid(windmills)
+        positions = []
+        for i in range(5):
+            positions.append(position)
+        return positions
+
     def find_path(self):
         """find a path around the wind farm for the ADV"""
         if self.calculated_path:

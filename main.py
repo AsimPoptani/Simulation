@@ -2,30 +2,24 @@ import imp
 from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
 from Vehicle import VehicleStates
-from config import WIDTH, HEIGHT, COASTAL_LOCATION, BOAT_N_DRONES, BOAT_MAX_FUEL, SIMULATION_TIME_FAULTS
-from locations import locations
+from config import WIDTH, HEIGHT, BOAT_N_DRONES, BOAT_MAX_FUEL, SIMULATION_TIME_FAULTS, TIME_SCALAR, BG_COLOUR, \
+    FG_COLOUR
+from locations import locations, coastal_location
 from faults import FAULTS
 from colorsys import hsv_to_rgb
-from Submersive import SubmersiveSprite
 from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
-import pygame, datetime,os
-from datetime import datetime, timedelta
+import pygame, os
+# Current time
+from time_utilities import nanosecond_string, NANOSECONDS_IN_HOUR
+
 # Get pwd
 pwd = os.getcwd()
 # Os join Opens a file and returns a file object.
-url=os.path.join(pwd,"./OpenSans-Regular.ttf")
+url = os.path.join(pwd, "./OpenSans-Regular.ttf")
 
-# Current time
-# from time_utilities import NANOSECONDS_IN_HOUR, nanosecond_string
-from datetime import datetime
-
-current_time = datetime.now()
-# Remove to 0:00:00
-current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-
-
-
+current_time = 0
+text_width = 0
 
 def initialise_windfarm(sim_sprites) -> list [Windmill]:
     windfarm = []
@@ -34,7 +28,7 @@ def initialise_windfarm(sim_sprites) -> list [Windmill]:
         windfarm.append(turbine)
         sim_sprites.append(WindmillSprite(turbine))
 
-    # Run a simulation of 1 year to generate faults in Windmills
+    # Run for SIMULATION_TIME_FAULTS number of ticks to generate faults in Windmills
     for i in range(SIMULATION_TIME_FAULTS):
         for turbine in windfarm:
             # TODO inside step add faults for each day etc
@@ -44,22 +38,22 @@ def initialise_windfarm(sim_sprites) -> list [Windmill]:
 
 
 def initialise_aquatic_crafts(sim_sprites) -> (Boat, [Submersive]):
-    adv = Boat(windfarms, start_pos=(*COASTAL_LOCATION, 0))
-    boat_sprite = BoatSprite(adv)
-    sim_sprites.append(boat_sprite)
+    adv = Boat(windfarms, name="ADV", start_pos=(*coastal_location, 0))
+    adv_sprite = BoatSprite(adv)
+    sim_sprites.append(adv_sprite)
     auvs = []
     for i in range(BOAT_N_DRONES):
-        auv = Submersive(windfarms, adv)
+        auv = Submersive(windfarms, adv, name="AUV" + str(i), start_pos=adv.pos)
         auvs.append(auv)
-        drone_sprite = SubmersiveSprite(auv)
-        sim_sprites.append(drone_sprite)
+        auv_sprite = SubmersiveSprite(auv)
+        sim_sprites.append(auv_sprite)
     adv.set_drones(auvs)
 
     return adv, auvs
 
 
 def create_path(control_room, adv):
-    destination = [] ##control_room.get_boat_positions()
+    destination = control_room.new_path()
     if len(destination) == 0:
         print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
         destination = control_room.find_path()
@@ -89,8 +83,23 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Fill the background with white
-    screen.fill((255, 255, 255))
+    boat.step()
+    for drone in drones:
+        drone.step()
+
+    if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL:
+        create_path(control, boat)
+
+    total_power = 0
+    for windmill in windfarms:
+        windmill.step()
+        total_power += windmill.data["Power"]
+
+
+    ######## SPRITES ########
+
+    # Fill screen with background colour
+    screen.fill(BG_COLOUR)
     for sprite in sprites:
         toBlit = sprite.getSprite()
         if toBlit == None:
@@ -115,7 +124,7 @@ while running:
         screen.blit(toBlit, position)
 
         if prob is not None:
-            prob_pos = position[0] - name.get_width() + 20, position[1] + 15
+            prob_pos = position[0] - prob.get_width() + 32, position[1] + 15
             screen.blit(prob, prob_pos)
         if battery is not None:
             battery_pos = position[0] - battery.get_width(), position[1]
@@ -124,123 +133,93 @@ while running:
             power_pos = position[0] - power.get_width()+25, position[1] 
             screen.blit(power, power_pos)
 
-    boat.step()
-    for drone in drones:
-        drone.step()
 
-    if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL:
-        create_path(control, boat)
-
-    total_power = 0
-    for windmill in windfarms:
-        windmill.step()
-        total_power += windmill.data["Power"]
-
-    # Create legend
-    box_size = (int(WIDTH / 3), int(HEIGHT / 2.2))
+    ######## FAULT LEGEND ########
+    box_size = (int(WIDTH / 6), int(HEIGHT / 2.3))
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((WIDTH - box_size[0], HEIGHT - box_size[1]), box_size), width=2)
     dot_pos = 0
-    # font = pygame.font.Font('freesansbold.ttf', 15)
-    text = font.render("Faults", 1, (0, 0, 0))
+    text = font.render("Faults", 1, FG_COLOUR)
     screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
     for fault in FAULTS:
         hue_diff = 0.9 / len(FAULTS)
         hue = fault["id"] * hue_diff
         colour = hsv_to_rgb(hue, 1, 1)
         colour = tuple(map(lambda x: round(x * 255), colour))
-        pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 10, HEIGHT - box_size[1] + 37 + dot_pos), 8)
-        # font = pygame.font.Font('freesansbold.ttf', 15)
-        fault_text=fault['human']
-        text = font.render(fault_text, 1, (0, 0, 0))
-        screen.blit(text, (WIDTH - box_size[0] + 25, HEIGHT - box_size[1] + 29 + dot_pos))
+        pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 20, HEIGHT - box_size[1] + 37 + dot_pos), 8)
+        fault_text = fault['human']
+        text = font.render(fault_text, 1, FG_COLOUR)
+        screen.blit(text, (WIDTH - box_size[0] + 30, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
 
     
-    # Create summary box surface
-    summary_box = (300,100)
+    ######## SHIP SUMMARY ########
+    summary_box = (300, 100)
     summary_box_surface = pygame.Surface(summary_box)
-    # White background
-    summary_box_surface.fill((255, 255, 255))
-    # Add text "Ship summary"
-    # font = pygame.font.Font('freesansbold.ttf', 15)
-    text = font.render("Ship summary", 1, (0, 0, 0))
-    summary_box_surface.blit(text,(0,0),text.get_rect())
+    summary_box_surface.fill(BG_COLOUR)
+    text = font.render("Ship summary", 1, FG_COLOUR)
+    summary_box_surface.blit(text, (5, 0), text.get_rect())
 
     # Get ship battery level
-    battery_level = boat.fuel_level
+    fuel_level = boat.fuel_level
 
     # Get boat sprite
     boat_sprite = BoatSprite(boat)
     battery_icon = boat_sprite.getPower()
 
     # Add text "Total power"
-    # font = pygame.font.Font('freesansbold.ttf', 15)
-    text = font.render(f"Total power:{((battery_level/BOAT_MAX_FUEL)*100):.2f}%", 1, (0, 0, 0))
-    summary_box_surface.blit(text,(20,20),text.get_rect())
+    text = font.render(f"Total fuel : {((fuel_level / BOAT_MAX_FUEL) * 100):.2f}%", 1, FG_COLOUR)
+    summary_box_surface.blit(text, (25, 30), text.get_rect())
 
     # Add Icon next to Total power
-    summary_box_surface.blit(battery_icon,(0,15))
-
-
+    summary_box_surface.blit(battery_icon, (5, 32))
     
     # Number of drones out
     # Count number of drones out
     num_out = BOAT_N_DRONES - len(boat.drones)
 
-    text=font.render(f"Drones out:{num_out} | Drones in: {BOAT_N_DRONES-num_out}", 1, (0, 0, 0))
-    summary_box_surface.blit(text,(20,40),text.get_rect())
+    text = font.render(f"Drones out : {num_out} | Drones in : {BOAT_N_DRONES-num_out}", 1, FG_COLOUR)
+    summary_box_surface.blit(text, (25, 50), text.get_rect())
 
     # Get image of drone
     drone_sprite=SubmersiveSprite(drones[0])
     # Add Icon next to drones out
-    summary_box_surface.blit(drone_sprite.image,(0,35))
+    summary_box_surface.blit(drone_sprite.image, (5, 52))
 
     # Blit summary box to screen
-    screen.blit(summary_box_surface, (0, HEIGHT - summary_box[1]))
+    screen.blit(summary_box_surface, (5, HEIGHT - summary_box[1]))
 
 
-    # Create data graphic legend thing
+    ######## WEATHER ########
     data_graphic_box = (175, 175)
-    # Draw Box
-    # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((0, 0), data_graphic_box), width=2)
-    # Write Title
-    # text = pygame.font.Font('freesansbold.ttf', 25).render("Data", 1, (0, 0, 0))
-    # screen.blit(text, (int(data_graphic_box[0]/2 - text.get_width() + 20) , 5))
     # Show Wind Speed
     wind_speed = windfarms[0].data["Wind Speed"]
     # Opensans font
 
-    # font = pygame.font.Font('freesansbold.ttf', 15)
-    text = font.render("Wind Speed: "+str(wind_speed) + " m/s", 1, (0, 0, 0))
-    screen.blit(text, (5, 30))
+    text = font.render("Wind Speed : "+str(wind_speed) + " m/s", 1, FG_COLOUR)
+    screen.blit(text, (5, 10))
     # Show Total Power
-    text = font.render("Total Power: "+str(int(total_power/ 1000000)) + " MW", 1, (0, 0, 0))
-    screen.blit(text, (5, 45))
+    text = font.render("Total Power : "+str(int(total_power / 1000000)) + " MW", 1, FG_COLOUR)
+    screen.blit(text, (5, 25))
     # Wind Direction
     wind_direction = windfarms[0].data["Wind Direction"]
     arrow = pygame.image.load('./sprites/up-arrow.png')
     arrow = pygame.transform.rotate(arrow, 360 - int(wind_direction))
-    screen.blit(arrow, (84 - int(arrow.get_width()/2), 120 - int(arrow.get_height()/2)))
-    text = font.render("Direction:" + str(wind_direction), 1, (0, 0, 0))
-    screen.blit(text, (5, 60))
+    screen.blit(arrow, (84 - int(arrow.get_width()/2), 100 - int(arrow.get_height()/2)))
+    text = font.render("Direction : " + str(wind_direction) + u'\N{DEGREE SIGN}', 1, FG_COLOUR)
+    screen.blit(text, (5, 40))
 
-
-    # If current time is 1800 skip to next day to 9 am 
-    if current_time.hour >= 18 :
-        current_time = current_time + timedelta(days=1)
-        current_time = current_time.replace(hour=9, minute=0, second=0, microsecond=0)
-    # Draw date and time
-    # text=font.render(nanosecond_string(current_time), 1, (0, 0, 0))
-    text=font.render(current_time.strftime("%d/%m/%Y %H:%M:%S"), 1, (0, 0, 0))
+    ######## DATE & TIME ########
+    text = font.render(nanosecond_string(current_time), 1, FG_COLOUR)
     # Step time
-    current_time += timedelta(hours=1)
+    current_time += int(NANOSECONDS_IN_HOUR * TIME_SCALAR)
     # Center text
-    screen.blit(text,(WIDTH - text.get_width() - 5,5))
+    text_width = max(text_width, text.get_width())
+    screen.blit(text,(WIDTH - text_width - 5,5))
 
     # Update the display
     pygame.display.flip()
 
-    clock.tick(10)
+    clock.tick(30)
 
 # Done! Time to quit.
 pygame.quit()

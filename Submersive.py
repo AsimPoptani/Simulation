@@ -96,10 +96,8 @@ class SubmersiveSprite(Sprite.Sprite):
     def __init__(self, submersive: Submersive):
         super(SubmersiveSprite, self).__init__()
         # Add sprite
-        # TODO update image to a new image
-        self.image = pygame.image.load('./sprites/subblack.png')
         self.sprites = [None] * len(VehicleStates.__members__)
-        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/subblack.png')
+        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/subwhite.png')
         self.sprites[VehicleStates.MOVESTATE.value] = pygame.image.load('./sprites/subred.png')
         self.sprites[VehicleStates.DETECTSTATE.value] = pygame.image.load('./sprites/subgreen.png')
         self.sprites[VehicleStates.RETURNSTATE.value] = pygame.image.load('./sprites/subred.png')

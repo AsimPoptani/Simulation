@@ -1,11 +1,11 @@
-from math import sqrt
+from math import sin, cos
 
-from config import N_WINDMILLS_X, N_WINDMILLS_Y, MAX_AREA_X, MAX_AREA_Y
+from config import N_WINDMILLS_X, N_WINDMILLS_Y, MAX_AREA_X, MAX_AREA_Y, DISTANCE_FROM_SHORE, DIRECTION_OF_WINDFARM
 from config import WINDFARM_WIDTH, WINDFARM_HEIGHT
 
 # the windfarm bottom left corner is the distance from the control centre / coast
-start_x = 7 * 1000
-start_y = 5 * 1000
+start_x = 5 * 1000
+start_y = 2 * 1000
 
 # the horizontal and vertical distances between windmills
 x_space = WINDFARM_WIDTH // N_WINDMILLS_X
@@ -30,9 +30,9 @@ for j in range(N_WINDMILLS_Y):
             break
         elif j == 1 and (i == 0 or i >= 5):
             continue
-        elif j == 2and (i < 2 or (i >= 8 and i < 14) or i > 17):
+        elif j == 2 and (i < 2 or (8 <= i < 14) or i > 17):
             continue
-        elif j == 3 and ((i >= 9 and i < 14) or i > 17):
+        elif j == 3 and ((9 <= i < 14) or i > 17):
             continue
         elif j == 4 and i > 17:
             break
@@ -68,3 +68,7 @@ for j in range(N_WINDMILLS_Y):
         places.reverse()
     for place in places:
         locations.append(place)
+
+coast_x = min_x + DISTANCE_FROM_SHORE * sin(DIRECTION_OF_WINDFARM)
+coast_y = max_y + DISTANCE_FROM_SHORE * cos(DIRECTION_OF_WINDFARM)
+coastal_location = (coast_x, coast_y)

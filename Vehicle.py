@@ -5,6 +5,7 @@ import numpy as np
 from enum import Enum
 
 from Windmill import Windmill
+from config import TIME_SCALAR
 
 
 class VehicleStates(Enum):
@@ -107,7 +108,7 @@ class Vehicle:
 
         theta = atan2(diff[1], diff[0])
         distance = sqrt(pow(diff[0], 2) + pow(diff[1], 2))
-        distance = min(distance, self.abs_max_velocity)
+        distance = min(distance, self.abs_max_velocity * TIME_SCALAR)
         opp = distance * cos(theta)
         adj = distance * sin(theta)
         # Convert to tuple

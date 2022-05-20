@@ -21,11 +21,13 @@
 from ControlRoom import distance
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
-    ROTOR_RADIUS, MAX_SCAN_DISTANCE
+    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
 import pygame
+
+from locations import coastal_location
 
 
 class Boat(Vehicle):
@@ -87,7 +89,11 @@ class Boat(Vehicle):
             self.windfarm = self.windfarm_cache.copy()
 
         if self.fuel_level < BOAT_MAX_FUEL:
-            self.fuel_level = min(self.fuel_level + 4, BOAT_MAX_FUEL)
+            self.fuel_level = min(self.fuel_level + 4 * TIME_SCALAR, BOAT_MAX_FUEL)
+
+    def update_fuel_time(self):
+        self.hours_at_sea += 1 * TIME_SCALAR
+        self.fuel_level -= 1 * TIME_SCALAR
 
     def move_state(self):
         if self.target is not None:
@@ -95,14 +101,12 @@ class Boat(Vehicle):
                 if self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS):
                     self.set_detect_state()
                 else:
-                    self.hours_at_sea += 1
-                    self.fuel_level -= 1
+                    self.update_fuel_time()
             else:
                 if self.move(self.target, BOAT_RADIUS):
                     self.set_detect_state()
                 else:
-                    self.hours_at_sea += 1
-                    self.fuel_level -= 1
+                    self.update_fuel_time()
 
     def detect_state(self):
         if self.drones_deployed == 0:
@@ -115,22 +119,19 @@ class Boat(Vehicle):
                 drone.set_target(target)
                 drone.hide = False
                 self.drones_deployed += 1
-            self.hours_at_sea += 1
-            self.fuel_level -= 1
+            self.update_fuel_time()
         elif self.drones_returned != self.drones_deployed:
-            self.hours_at_sea += 1
-            self.fuel_level -= 1
+            self.update_fuel_time()
         if self.drones_returned == self.drones_deployed:
             self.drones_deployed, self.drones_returned = 0, 0
             self.target = None
             self.next_target()
 
     def return_state(self):
-        if self.move(COASTAL_LOCATION, BOAT_RADIUS):
+        if self.move(coastal_location, BOAT_RADIUS):
             self.set_hold_state()
         else:
-            self.hours_at_sea += 1
-            self.fuel_level -= 1
+            self.update_fuel_time()
 
     def __str__(self) -> str:
         return f"Boat: {self.name} \n {self.pos} with state {self.state}"
@@ -141,12 +142,10 @@ class BoatSprite(Sprite.Sprite):
     def __init__(self, boat: Boat):
         super(BoatSprite, self).__init__()
         # Add sprite
-        # TODO update image to a new image
-        self.image = pygame.image.load('./sprites/boat-black.png')
         self.sprites = [None] * len(VehicleStates.__members__)
-        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/boat-black.png')
+        self.sprites[VehicleStates.HOLDSTATE.value] = pygame.image.load('./sprites/boat-white.png')
         self.sprites[VehicleStates.MOVESTATE.value] = pygame.image.load('./sprites/boat-red.png')
-        self.sprites[VehicleStates.DETECTSTATE.value] = pygame.image.load('./sprites/boat-blue.png')
+        self.sprites[VehicleStates.DETECTSTATE.value] = pygame.image.load('./sprites/boat-yellow.png')
         self.sprites[VehicleStates.RETURNSTATE.value] = pygame.image.load('./sprites/boat-red.png')
         self.image = self.sprites[VehicleStates.HOLDSTATE.value]
         self.rect = self.image.get_rect()

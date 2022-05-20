@@ -1,5 +1,7 @@
 import pygame
 
+from config import FG_COLOUR
+
 
 class Sprite(pygame.sprite.Sprite):
 
@@ -20,8 +22,7 @@ class Sprite(pygame.sprite.Sprite):
 
     def set_text(self, string, coordx, coordy, fontSize):  # Function to set text
         font = pygame.font.Font('freesansbold.ttf', fontSize)
-        # (0, 0, 0) is black, to make black text
-        text = font.render(string, True, (0, 0, 0))
+        text = font.render(string, True, FG_COLOUR)
         textRect = text.get_rect()
         textRect.center = (coordx, coordy)
         return (text, textRect)

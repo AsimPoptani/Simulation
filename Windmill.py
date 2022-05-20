@@ -1,8 +1,8 @@
-import random, pygame
+import pygame
 from math import sqrt
 import random
 from display import x_to_pixels, y_to_pixels
-from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, DATA_UPDATE_INTERVAL, DRONE_MAX_VELOCITY, TIME_TO_NEXT_INSPECTION
+from config import ROTOR_RADIUS, FAULT_RATE_DIVISOR, TIME_TO_NEXT_INSPECTION, TIME_SCALAR
 from Weather import Datagen
 from faults import FAULTS
 import Sprite
@@ -12,9 +12,6 @@ class Windmill():
     # A windmill has several states
     # Working Normally
     # Broken
-
-    AMOUNT_OF_STEPS_TO_DAY=24
-
 
     # Pass in faults with probability
     # TODO add time to detect with Gaussian noise
@@ -63,9 +60,10 @@ class Windmill():
         if self.time_to_inspection > 0:
             self.time_to_inspection -= 1
 
-    # Update data like windspeed only every x seconds (needs calculation)
+    # Update data, like windspeed, every hour
     def update_data(self):
-        if int(self.timer_counter) % DATA_UPDATE_INTERVAL == 0:
+        if self.timer_counter >= 1:
+            self.timer_counter = 0
             wind_s_d_update = self.datagen.update()
             self.data.update({"Wind Speed": wind_s_d_update[0]})
             self.data.update({"Wind Direction": wind_s_d_update[1]})
@@ -102,7 +100,8 @@ class Windmill():
             else:
                 self.data.update({"Vibration": self.datagen.get_vibrations(self.data["Wind Speed"])})
                 self.data.update({"Power": self.datagen.get_power(self.data["Wind Speed"])})
-        self.timer_counter += 1
+        else:
+            self.timer_counter += TIME_SCALAR
 
     def has_fault(self):
         return len(self.faults) > 0
@@ -171,12 +170,6 @@ class WindmillSprite(Sprite.Sprite):
                 x += 5
             self.play = False
         else:
-            '''
-            if self.windmill.needs_inspection():
-                self.image = self.sprites[self.vis_sprite + self.frames]
-            else:
-                self.image = self.sprites[self.vis_sprite]
-            '''
             # clear all color circles if no faults
             for x in range(2, len(self.windmill.potential_faults) * 5, 5):
                 pygame.draw.circle(self.image, (0, 0, 0, 0), (x, 2), 2)
