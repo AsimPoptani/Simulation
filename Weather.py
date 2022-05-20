@@ -28,9 +28,7 @@ class Datagen():
     # Account for noise / slight variations in speed across wind turbines. Returns an updated wind speed in m/s and direction
     # Call every hour to get new windspeeds
     def update(self):
-        self.counter += 1
-        if self.counter > 8760:
-            self.counter = 0
+        self.counter = (self.counter + 1) % len(array)
         self.speed = array[self.counter, 3]
         self.direction = array[self.counter, 4]
 
