@@ -219,7 +219,7 @@ class WindmillSprite(Sprite.Sprite):
     # Text for probabilty
     def getProb(self):
         text = None
-        if self.windmill.fault_prob >= 0:
+        if self.windmill.fault_prob > 0:
             text = self.set_text(str(self.windmill.fault_prob) + "%", 0, 0, 9)[0]
         return text
 
