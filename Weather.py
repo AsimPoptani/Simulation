@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from config import ROTOR_RADIUS, MAX_POWER, AIR_DENSITY, TURBINE_HEIGHT
 
@@ -12,7 +14,7 @@ POWER_COEFFICIENT = 0.4
 # Gets wind speed and direction (speed, direction) for a given month,day,hour
 class Datagen():
     def __init__(self) -> None:
-        self.counter = 0
+        self.counter = random.randint(0, len(array))
         self.speed = 0
         self.direction = 0
 
