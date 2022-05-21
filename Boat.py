@@ -49,7 +49,7 @@ class Boat(Vehicle):
             self.name = name
 
         # max velocity
-        self.abs_max_velocity = BOAT_MAX_VELOCITY
+        self.abs_max_velocity = BOAT_MAX_VELOCITY * TIME_SCALAR
         # Communication range
         self.communication_range = DRONE_MAX_COMMUNICATION_RANGE
         # Current position X left Y up Z down

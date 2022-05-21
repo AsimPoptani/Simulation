@@ -108,7 +108,7 @@ class Vehicle:
 
         theta = atan2(diff[1], diff[0])
         distance = sqrt(pow(diff[0], 2) + pow(diff[1], 2))
-        distance = min(distance, self.abs_max_velocity * TIME_SCALAR)
+        distance = min(distance, self.abs_max_velocity)
         opp = distance * cos(theta)
         adj = distance * sin(theta)
         # Convert to tuple
