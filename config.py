@@ -48,6 +48,8 @@ DRONE_MAX_COMMUNICATION_RANGE = 10 * 1000
 DRONE_MAX_DETECTION_RANGE = 10
 # dimensions of drone in meters
 DRONE_RADIUS = 5
+# maximum number of targets each drone can be allocated
+DRONE_MAX_TARGETS = 6
 
 # meters
 BOAT_RADIUS = 84
@@ -56,7 +58,7 @@ BOAT_MAX_FUEL = 120 * 24
 # meters per tick
 BOAT_MAX_VELOCITY = 20 * 1000
 # number of drones per boat
-BOAT_N_DRONES = 40
+BOAT_N_DRONES = 30
 
 # value by which the probabilities are divided
 FAULT_RATE_DIVISOR = 365 * 24 * 60

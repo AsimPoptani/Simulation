@@ -21,7 +21,7 @@
 from ControlRoom import distance, n_nearest_targets
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
-    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR, BOAT_N_DRONES
+    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR, BOAT_N_DRONES, DRONE_MAX_TARGETS
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -129,7 +129,7 @@ class Boat(Vehicle):
                 reach = drone.fuel_level / 2
                 target = self
                 # limit the number of targets each drone can have
-                count = 4
+                count = DRONE_MAX_TARGETS
                 while reach > drone.abs_max_velocity and len(self.windmills) > 0:
                     self.windmills.sort(key=lambda i: distance(*target.pos[:2], *i.pos[:2]), reverse=False)
                     next_target = self.windmills[0]
