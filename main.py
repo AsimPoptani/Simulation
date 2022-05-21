@@ -148,7 +148,7 @@ while running:
         pygame.draw.circle(screen, colour, (WIDTH - box_size[0] + 20, HEIGHT - box_size[1] + 37 + dot_pos), 8)
         fault_text = fault['human']
         text = font.render(fault_text, 1, FG_COLOUR)
-        screen.blit(text, (WIDTH - box_size[0] + 30, HEIGHT - box_size[1] + 29 + dot_pos))
+        screen.blit(text, (WIDTH - box_size[0] + 35, HEIGHT - box_size[1] + 29 + dot_pos))
         dot_pos += int((box_size[1] - 30) / len(FAULTS))
 
     
