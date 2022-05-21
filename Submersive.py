@@ -51,8 +51,7 @@ class Submersive(Vehicle):
             self.target.faults = []
 
     def set_detect_state(self):
-        for fault in self.target.faults:
-            self.detection_time += fault["timeToDetect"]
+        self.detection_time += round(1 / TIME_SCALAR)
         super().set_detect_state()
 
     def hold_state(self):
@@ -78,7 +77,7 @@ class Submersive(Vehicle):
         self.hide = False
         # Give turbine faulty or not faulty based on fault detection
         self.target.fault_prob = self.averaging.check_faulty(self.target, 25)
-        if self.target.has_fault():
+        if self.detection_time > 0:
             self.detect()
         else:
             self.target.inspected_turbine()
