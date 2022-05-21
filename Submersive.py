@@ -66,9 +66,11 @@ class Submersive(Vehicle):
 
     def move_state(self):
         if self.target is not None and self.fuel_level >= self.abs_max_velocity:
-            if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
+            collision, distance_moved = self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS)
+            if collision:
                 self.set_detect_state()
             self.fuel_level = max(0, self.fuel_level - self.abs_max_velocity)
+            self.distance_travelled += distance_moved
 
     def detect_state(self):
         # Give turbine faulty or not faulty based on fault detection
@@ -82,10 +84,12 @@ class Submersive(Vehicle):
 
     def return_state(self):
         if self.fuel_level >= self.abs_max_velocity:
-            if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
+            collision, distance_travelled = self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS)
+            if collision:
                 self.adv.set_drone_returned(self)
                 self.set_hold_state()
             self.fuel_level = max(0, self.fuel_level - self.abs_max_velocity)
+            self.distance_travelled += distance_travelled
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"

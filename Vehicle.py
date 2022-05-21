@@ -119,7 +119,7 @@ class Vehicle:
         # Update the position
         self.pos = new_pos
         # If new position is the same as destination then return true
-        return distance <= radius
+        return distance <= radius, distance
 
     def set_target(self, destination):
         if destination is not None:

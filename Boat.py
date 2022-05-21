@@ -99,15 +99,19 @@ class Boat(Vehicle):
     def move_state(self):
         if self.target is not None:
             if type(self.target) is Windmill:
-                if self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS):
+                collision, distance_travelled = self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS)
+                if collision:
                     self.set_detect_state()
                 else:
                     self.update_fuel_time()
+                self.distance_travelled += distance_travelled
             else:
-                if self.move(self.target, BOAT_RADIUS):
+                collision, distance_travelled = self.move(self.target, BOAT_RADIUS)
+                if collision:
                     self.set_detect_state()
                 else:
                     self.update_fuel_time()
+                self.distance_travelled += distance_travelled
 
     def detect_state(self):
         if len(self.drones) == BOAT_N_DRONES and len(self.windmills) == 0 and self.drones_deployed == 0:
@@ -151,10 +155,12 @@ class Boat(Vehicle):
             self.next_target()
 
     def return_state(self):
-        if self.move(coastal_location, BOAT_RADIUS):
+        collision, distance_travelled = self.move(coastal_location, BOAT_RADIUS)
+        if collision:
             self.set_hold_state()
         else:
             self.update_fuel_time()
+        self.distance_travelled += distance_travelled
 
     def drones_in_communications_range(self) -> bool:
         all_in_range = True
