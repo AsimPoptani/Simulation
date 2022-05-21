@@ -66,6 +66,7 @@ class Submersive(Vehicle):
                 self.distance_travelled = 0  # reset distance
 
     def move_state(self):
+        self.hide = False
         if self.target is not None and self.fuel_level >= self.abs_max_velocity:
             collision, distance_travelled = self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS)
             self.fuel_level = max(0, self.fuel_level - distance_travelled)
@@ -74,6 +75,7 @@ class Submersive(Vehicle):
                 self.set_detect_state()
 
     def detect_state(self):
+        self.hide = False
         # Give turbine faulty or not faulty based on fault detection
         self.target.fault_prob = self.averaging.check_faulty(self.target, 25)
         if self.target.has_fault():
@@ -84,6 +86,7 @@ class Submersive(Vehicle):
             self.next_target()
 
     def return_state(self):
+        self.hide = False
         if self.fuel_level >= self.abs_max_velocity:
             collision, distance_travelled = self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS)
             self.fuel_level = max(0, self.fuel_level - distance_travelled)

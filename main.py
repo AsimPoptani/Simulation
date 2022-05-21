@@ -85,7 +85,7 @@ while running:
             running = False
 
     # start from the coast at the start of the day
-    if boat.state == VehicleStates.HOLDSTATE and current_time % NANOSECONDS_IN_DAY == 0:
+    if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL and current_time % NANOSECONDS_IN_DAY == 0:
         create_path(control, boat)
 
     boat.step()
@@ -183,9 +183,9 @@ while running:
     summary_box_surface.blit(text, (25, 50), text.get_rect())
 
     # Get image of drone
-    drone_sprite=SubmersiveSprite(drones[0])
+    drone_sprite = pygame.image.load('./sprites/subwhite.png')
     # Add Icon next to drones out
-    summary_box_surface.blit(drone_sprite.image, (5, 52))
+    summary_box_surface.blit(drone_sprite, (5, 52))
 
     # Blit summary box to screen
     screen.blit(summary_box_surface, (5, HEIGHT - summary_box[1]))

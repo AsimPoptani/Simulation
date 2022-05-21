@@ -69,7 +69,7 @@ class Boat(Vehicle):
         self.windmills = []
 
     def set_drones(self, drones):
-        self.drones = drones
+        self.drones = drones.copy()
         self.auvs = drones.copy()
 
     def set_drone_returned(self, drone):
@@ -100,67 +100,73 @@ class Boat(Vehicle):
         if self.target is not None:
             if type(self.target) is Windmill:
                 collision, distance_travelled = self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS)
+                self.distance_travelled += distance_travelled
                 if collision:
                     self.set_detect_state()
                 else:
                     self.update_fuel_time()
-                self.distance_travelled += distance_travelled
             else:
                 collision, distance_travelled = self.move(self.target, BOAT_RADIUS)
+                self.distance_travelled += distance_travelled
                 if collision:
                     self.set_detect_state()
                 else:
                     self.update_fuel_time()
-                self.distance_travelled += distance_travelled
 
     def detect_state(self):
-        if len(self.drones) == BOAT_N_DRONES and len(self.windmills) == 0 and self.drones_deployed == 0:
-            max_distance = MAX_SCAN_DISTANCE
+        max_distance = MAX_SCAN_DISTANCE
+        if self.drones_deployed == 0 and len(self.windmills) == 0:
             self.windmills = list(filter(lambda i: distance(*self.pos[:2], *i.pos[:2]) < max_distance, self.windfarm))
             self.windmills.sort(key=lambda i: distance(*self.pos[:2], *i.pos[:2]), reverse=False)
-            while len(self.windmills) > 0 and len(self.drones) > 0:
-                targets = []
-                target, self.windmills = self.windmills[0], self.windmills[1:]
-                self.windfarm.remove(target)
-                targets.append(target)
-                additional = n_nearest_targets(target, self.windmills, 3)
-                for target in additional:
-                    self.windfarm.remove(target)
-                    self.windmills.remove(target)
-                    targets.append(target)
 
-                drone, self.drones = self.drones[0], self.drones[1:]
-                drone.set_targets(targets)
-                drone.hide = False
-                self.drones_deployed += 1
+        if len(self.windmills) > 0:
+            drones_to_remove = []
+
+            for drone in self.drones:
+                # targets for this drone
+                targets = []
+                # running tally of distance this drone will travel
+                reach = drone.fuel_level / 2
+                target = self
+                while reach > drone.abs_max_velocity and len(self.windmills) > 0:
+                    self.windmills.sort(key=lambda i: distance(*target.pos[:2], *i.pos[:2]), reverse=False)
+                    next_target = self.windmills[0]
+                    interval = distance(*target.pos[:2], *next_target.pos[:2])
+                    if reach - interval >= drone.abs_max_velocity:
+                        reach -= interval
+                        self.windmills.remove(next_target)
+                        self.windfarm.remove(next_target)
+                        targets.append(next_target)
+                        target = next_target
+                    else:
+                        break
+
+                if len(targets) > 0:
+                    drone.set_targets(targets)
+                    self.drones_deployed += 1
+                    drones_to_remove.append(drone)
+
+            for drone in drones_to_remove:
+                self.drones.remove(drone)
             self.update_fuel_time()
-        elif len(self.windmills) > 0:
-            self.update_fuel_time()
-            while len(self.windmills) > 0 and len(self.drones) > 0:
-                target, self.windmills = self.windmills[0], self.windmills[1:]
-                self.windfarm.remove(target)
-                drone, self.drones = self.drones[0], self.drones[1:]
-                drone.set_target(target)
-                drone.hide = False
-                self.drones_deployed += 1
             if not self.drones_in_communications_range():
                 print('Drones out of communications range !')
-        elif len(self.drones) != BOAT_N_DRONES:
-            self.update_fuel_time()
-            if not self.drones_in_communications_range():
-                print('Drones out of communications range !')
-        else:
+        elif len(self.drones) == BOAT_N_DRONES:
             self.drones_deployed = 0
             self.target = None
             self.next_target()
+        else:
+            self.update_fuel_time()
+            if not self.drones_in_communications_range():
+                print('Drones out of communications range !')
 
     def return_state(self):
         collision, distance_travelled = self.move(coastal_location, BOAT_RADIUS)
+        self.distance_travelled += distance_travelled
         if collision:
             self.set_hold_state()
         else:
             self.update_fuel_time()
-        self.distance_travelled += distance_travelled
 
     def drones_in_communications_range(self) -> bool:
         all_in_range = True
