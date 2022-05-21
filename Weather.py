@@ -8,13 +8,15 @@ path = open('./hornsea-ws-wd.csv')
 array = np.loadtxt(path, delimiter=",", dtype='float', skiprows=11)
 array = array[:,1:]
 
+counter_start = random.randint(0, len(array))
+
 # Power efficiency. Cant be greater than 0.59. Around 0.35-0.45 for most turbines.
 POWER_COEFFICIENT = 0.4
 
 # Gets wind speed and direction (speed, direction) for a given month,day,hour
 class Datagen():
     def __init__(self) -> None:
-        self.counter = random.randint(0, len(array))
+        self.counter = counter_start
         self.speed = 0
         self.direction = 0
 
