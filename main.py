@@ -11,7 +11,7 @@ from Windmill import Windmill, WindmillSprite
 from Submersive import Submersive, SubmersiveSprite
 import pygame, os
 # Current time
-from time_utilities import nanosecond_string, NANOSECONDS_IN_HOUR
+from time_utilities import nanosecond_string, NANOSECONDS_IN_HOUR, NANOSECONDS_IN_DAY
 
 # Get pwd
 pwd = os.getcwd()
@@ -57,6 +57,7 @@ def create_path(control_room, adv):
     if len(destination) == 0:
         print('Schedular returned no positions.', 'Reverting to hand-rolled scheduling.')
         destination = control_room.find_path()
+
     adv.set_targets(destination)
 
 
@@ -83,12 +84,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    # start from the coast at the start of the day
+    if boat.state == VehicleStates.HOLDSTATE and current_time % NANOSECONDS_IN_DAY == 0:
+        create_path(control, boat)
+
     boat.step()
     for drone in drones:
         drone.step()
-
-    if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL:
-        create_path(control, boat)
 
     total_power = 0
     for windmill in windfarms:
