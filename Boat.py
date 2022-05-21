@@ -89,7 +89,8 @@ class Boat(Vehicle):
             self.windfarm = self.windfarm_cache.copy()
 
         if self.fuel_level < BOAT_MAX_FUEL:
-            self.fuel_level = min(self.fuel_level + 4 * TIME_SCALAR, BOAT_MAX_FUEL)
+            # estimate a rate of 3500 gallons per hour, takes ~90 hours
+            self.fuel_level = min(self.fuel_level + (BOAT_MAX_FUEL / 90) * TIME_SCALAR, BOAT_MAX_FUEL)
 
     def update_fuel_time(self):
         self.hours_at_sea += 1 * TIME_SCALAR
