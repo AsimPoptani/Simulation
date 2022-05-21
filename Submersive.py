@@ -28,7 +28,7 @@ class Submersive(Vehicle):
             self.name = name
 
         # max velocity
-        self.abs_max_velocity = DRONE_MAX_VELOCITY
+        self.abs_max_velocity = DRONE_MAX_VELOCITY * TIME_SCALAR
         # Communication range
         self.communication_range = DRONE_MAX_COMMUNICATION_RANGE
         # Current position X left Y up Z down
@@ -62,13 +62,13 @@ class Submersive(Vehicle):
             self.pos = self.adv.pos  # drone is onboard the ADV
             #self.distance_travelled = 0  # reset distance
             if self.fuel_level < DRONE_MAX_BATTERY and self.adv.state != VehicleStates.DETECTSTATE:
-                self.fuel_level = min(self.fuel_level + DRONE_MAX_VELOCITY * TIME_SCALAR, DRONE_MAX_BATTERY)
+                self.fuel_level = min(self.fuel_level + self.abs_max_velocity, DRONE_MAX_BATTERY)
 
     def move_state(self):
-        if self.target is not None and self.fuel_level > 0:
+        if self.target is not None and self.fuel_level >= self.abs_max_velocity:
             if self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS):
                 self.set_detect_state()
-            self.fuel_level -= DRONE_MAX_VELOCITY * TIME_SCALAR
+            self.fuel_level = max(0, self.fuel_level - self.abs_max_velocity)
 
     def detect_state(self):
         # Give turbine faulty or not faulty based on fault detection
@@ -81,11 +81,11 @@ class Submersive(Vehicle):
             self.next_target()
 
     def return_state(self):
-        if self.fuel_level > 0:
+        if self.fuel_level >= self.abs_max_velocity:
             if self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS):
                 self.adv.set_drone_returned(self)
                 self.set_hold_state()
-            self.fuel_level -= DRONE_MAX_VELOCITY * TIME_SCALAR
+            self.fuel_level = max(0, self.fuel_level - self.abs_max_velocity)
 
     def __str__(self) -> str:
         return f"Submersive: {self.name} \n {self.pos} with state {self.state}"
