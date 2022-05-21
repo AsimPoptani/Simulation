@@ -4,8 +4,8 @@ from config import N_WINDMILLS_X, N_WINDMILLS_Y, MAX_AREA_X, MAX_AREA_Y, DISTANC
 from config import WINDFARM_WIDTH, WINDFARM_HEIGHT
 
 # the windfarm bottom left corner is the distance from the control centre / coast
-start_x = 5 * 1000
-start_y = 2 * 1000
+start_x = 6 * 1000
+start_y = 3 * 1000
 
 # the horizontal and vertical distances between windmills
 x_space = WINDFARM_WIDTH // N_WINDMILLS_X
