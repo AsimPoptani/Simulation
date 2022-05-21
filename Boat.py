@@ -128,6 +128,8 @@ class Boat(Vehicle):
                 # running tally of distance this drone will travel
                 reach = drone.fuel_level / 2
                 target = self
+                # limit the number of targets each drone can have
+                count = 4
                 while reach > drone.abs_max_velocity and len(self.windmills) > 0:
                     self.windmills.sort(key=lambda i: distance(*target.pos[:2], *i.pos[:2]), reverse=False)
                     next_target = self.windmills[0]
@@ -138,6 +140,10 @@ class Boat(Vehicle):
                         self.windfarm.remove(next_target)
                         targets.append(next_target)
                         target = next_target
+                        if count == 0:
+                            break
+                        else:
+                            count -= 1
                     else:
                         break
 
