@@ -67,6 +67,10 @@ class Boat(Vehicle):
         self.windfarm_cache = windfarm.copy()
         # work list
         self.windmills = []
+        # stats
+        self.total_distance_travelled = 0
+        self.total_hours_at_sea = 0
+        self.total_turbines_checked = 0
 
     def set_drones(self, drones):
         self.drones = drones.copy()
@@ -78,26 +82,37 @@ class Boat(Vehicle):
     def hold_state(self):
         if self.distance_travelled != 0:
             print(self.distance_travelled / 1000, "kilometers")
+            self.total_distance_travelled += self.distance_travelled
             self.distance_travelled = 0
             print(self.hours_at_sea, "hours")
+            self.total_hours_at_sea += self.hours_at_sea
             self.hours_at_sea = 0
 
-            print(175 - len(self.windfarm), 'turbines checked.')
+            turbines_checked = 175 - len(self.windfarm)
+            total_turbines_checked = turbines_checked
+            print(turbines_checked, 'turbines checked.')
             print(len(self.windfarm), 'turbines remain unchecked.')
 
             # refresh copy of windfarm
             self.windfarm = self.windfarm_cache.copy()
 
-        if self.fuel_level < BOAT_MAX_FUEL:
+        if self.fuel_level < BOAT_MAX_FUEL and distance(*self.pos[:2], *coastal_location) < 1000:
             # estimate a rate of 3500 gallons per hour, takes ~90 hours
             self.fuel_level = min(self.fuel_level + (BOAT_MAX_FUEL / 90) * TIME_SCALAR, BOAT_MAX_FUEL)
+        elif self.fuel_level < TIME_SCALAR and distance(*self.pos[:2], *coastal_location) > 1000:
+            print("Lost at sea")
+            print("last known position ", self.pos[:2])
+            print(self.total_distance_travelled / 1000, "kilometers", "total distance")
+            print(self.total_hours_at_sea, "hours", "total hours at sea")
+            print(total_turbines_checked, 'total turbines checked.')
+            exit(-1)
 
     def update_fuel_time(self):
-        self.hours_at_sea += 1 * TIME_SCALAR
-        self.fuel_level -= 1 * TIME_SCALAR
+        self.hours_at_sea += TIME_SCALAR
+        self.fuel_level = max(0, self.fuel_level - TIME_SCALAR)
 
     def move_state(self):
-        if self.target is not None:
+        if self.target is not None and self.fuel_level > TIME_SCALAR:
             if type(self.target) is Windmill:
                 collision, distance_travelled = self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS)
                 self.distance_travelled += distance_travelled
@@ -112,6 +127,8 @@ class Boat(Vehicle):
                     self.set_detect_state()
                 else:
                     self.update_fuel_time()
+        else:
+            self.set_hold_state()
 
     def detect_state(self):
         max_distance = MAX_SCAN_DISTANCE
@@ -167,12 +184,15 @@ class Boat(Vehicle):
                 print('Drones out of communications range !')
 
     def return_state(self):
-        collision, distance_travelled = self.move(coastal_location, BOAT_RADIUS)
-        self.distance_travelled += distance_travelled
-        if collision:
-            self.set_hold_state()
+        if self.fuel_level > TIME_SCALAR:
+            collision, distance_travelled = self.move(coastal_location, BOAT_RADIUS)
+            self.distance_travelled += distance_travelled
+            if collision:
+                self.set_hold_state()
+            else:
+                self.update_fuel_time()
         else:
-            self.update_fuel_time()
+            self.set_hold_state()
 
     def drones_in_communications_range(self) -> bool:
         all_in_range = True
