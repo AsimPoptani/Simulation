@@ -89,7 +89,7 @@ class Boat(Vehicle):
             self.hours_at_sea = 0
 
             turbines_checked = 175 - len(self.windfarm)
-            total_turbines_checked = turbines_checked
+            self.total_turbines_checked += turbines_checked
             print(turbines_checked, 'turbines checked.')
             print(len(self.windfarm), 'turbines remain unchecked.')
 
@@ -104,7 +104,7 @@ class Boat(Vehicle):
             print("last known position ", self.pos[:2])
             print(self.total_distance_travelled / 1000, "kilometers", "total distance")
             print(self.total_hours_at_sea, "hours", "total hours at sea")
-            print(total_turbines_checked, 'total turbines checked.')
+            print(self.total_turbines_checked, 'total turbines checked.')
             exit(-1)
 
     def update_fuel_time(self):
