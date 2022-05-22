@@ -65,7 +65,6 @@ sprites = []
 windfarms = initialise_windfarm(sprites)
 boat, drones = initialise_aquatic_crafts(sprites)
 control = ControlRoom(boat, windfarms)
-create_path(control, boat)
 
 
 pygame.init()
