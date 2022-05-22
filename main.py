@@ -85,7 +85,7 @@ while running:
             running = False
 
     # start from the coast at the start of the day
-    if boat.state == VehicleStates.HOLDSTATE and boat.fuel_level == BOAT_MAX_FUEL and current_time % NANOSECONDS_IN_DAY == 0:
+    if boat.state == VehicleStates.HOLDSTATE and current_time % NANOSECONDS_IN_DAY == 0:
         create_path(control, boat)
 
     boat.step()

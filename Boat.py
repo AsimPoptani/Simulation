@@ -21,7 +21,7 @@
 from ControlRoom import distance, n_nearest_targets
 from Vehicle import VehicleStates, Vehicle
 from config import COASTAL_LOCATION, DRONE_MAX_COMMUNICATION_RANGE, BOAT_MAX_VELOCITY, BOAT_MAX_FUEL, BOAT_RADIUS, \
-    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR, BOAT_N_DRONES, DRONE_MAX_TARGETS
+    ROTOR_RADIUS, MAX_SCAN_DISTANCE, TIME_SCALAR, BOAT_N_DRONES, DRONE_MAX_TARGETS, DRONE_MAX_VELOCITY
 from display import x_to_pixels, y_to_pixels
 from Windmill import Windmill
 import Sprite
@@ -134,7 +134,7 @@ class Boat(Vehicle):
                     self.windmills.sort(key=lambda i: distance(*target.pos[:2], *i.pos[:2]), reverse=False)
                     next_target = self.windmills[0]
                     interval = distance(*target.pos[:2], *next_target.pos[:2])
-                    if reach - interval >= drone.abs_max_velocity:
+                    if reach - interval >= drone.abs_max_velocity + 0.5 * DRONE_MAX_VELOCITY:
                         reach -= interval
                         self.windmills.remove(next_target)
                         self.windfarm.remove(next_target)
