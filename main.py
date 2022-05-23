@@ -160,6 +160,11 @@ while running:
     text = font.render("Ship summary", 1, FG_COLOUR)
     summary_box_surface.blit(text, (5, 0), text.get_rect())
 
+    # display state
+    summary_text = "State : " + boat.state.name
+    text = font.render(summary_text, 1, FG_COLOUR)
+    summary_box_surface.blit(text, (5, 30), text.get_rect())
+
     # Get ship battery level
     fuel_level = boat.fuel_level
 
@@ -169,22 +174,22 @@ while running:
 
     # Add text "Total power"
     text = font.render(f"Total fuel : {((fuel_level / BOAT_MAX_FUEL) * 100):.2f}%", 1, FG_COLOUR)
-    summary_box_surface.blit(text, (25, 30), text.get_rect())
+    summary_box_surface.blit(text, (25, 50), text.get_rect())
 
     # Add Icon next to Total power
-    summary_box_surface.blit(battery_icon, (5, 32))
+    summary_box_surface.blit(battery_icon, (5, 52))
     
     # Number of drones out
     # Count number of drones out
     num_out = BOAT_N_DRONES - len(boat.drones)
 
     text = font.render(f"Drones out : {num_out} | Drones in : {BOAT_N_DRONES-num_out}", 1, FG_COLOUR)
-    summary_box_surface.blit(text, (25, 50), text.get_rect())
+    summary_box_surface.blit(text, (25, 70), text.get_rect())
 
     # Get image of drone
     drone_sprite = pygame.image.load('./sprites/subwhite.png')
     # Add Icon next to drones out
-    summary_box_surface.blit(drone_sprite, (5, 52))
+    summary_box_surface.blit(drone_sprite, (5, 72))
 
     # Blit summary box to screen
     screen.blit(summary_box_surface, (5, HEIGHT - summary_box[1]))
