@@ -149,8 +149,9 @@ class Boat(Vehicle):
                     self.windmills.sort(key=lambda i: distance(*target.pos[:2], *i.pos[:2]), reverse=False)
                     next_target = self.windmills[0]
                     interval = distance(*target.pos[:2], *next_target.pos[:2])
-                    if reach - interval - (INSPECTION_TIME * DRONE_MAX_VELOCITY) > drone.abs_max_velocity:
-                        reach -= interval
+                    stretch = interval + (INSPECTION_TIME * DRONE_MAX_VELOCITY)
+                    if reach - stretch > drone.abs_max_velocity:
+                        reach -= stretch
                         self.windmills.remove(next_target)
                         self.windfarm.remove(next_target)
                         targets.append(next_target)
