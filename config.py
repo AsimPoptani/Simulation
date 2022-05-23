@@ -51,7 +51,7 @@ DRONE_RADIUS = 5
 # maximum number of targets each drone can be allocated
 DRONE_MAX_TARGETS = 7
 # hours
-INSPECTION_TIME = 1 / 6
+INSPECTION_TIME = 2 / 3
 
 # meters
 BOAT_RADIUS = 84
