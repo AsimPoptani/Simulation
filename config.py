@@ -49,7 +49,9 @@ DRONE_MAX_DETECTION_RANGE = 10
 # dimensions of drone in meters
 DRONE_RADIUS = 5
 # maximum number of targets each drone can be allocated
-DRONE_MAX_TARGETS = 6
+DRONE_MAX_TARGETS = 7
+# hours
+INSPECTION_TIME = 1 / 6
 
 # meters
 BOAT_RADIUS = 84

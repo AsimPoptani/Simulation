@@ -2,7 +2,7 @@
 from Vehicle import Vehicle, VehicleStates
 from Windmill import Windmill
 from config import DRONE_MAX_VELOCITY, DRONE_MAX_COMMUNICATION_RANGE, DRONE_MAX_BATTERY, DRONE_RADIUS, \
-    ROTOR_RADIUS, BOAT_RADIUS, CIRCUMNAVIGATION_DISTANCE, TIME_SCALAR
+    ROTOR_RADIUS, BOAT_RADIUS, CIRCUMNAVIGATION_DISTANCE, TIME_SCALAR, INSPECTION_TIME
 from display import x_to_pixels, y_to_pixels
 from averaging import Averaging
 import Sprite
@@ -51,7 +51,7 @@ class Submersive(Vehicle):
             self.target.faults = []
 
     def set_detect_state(self):
-        self.detection_time += round(0.5 / TIME_SCALAR)
+        self.detection_time += round(INSPECTION_TIME / TIME_SCALAR)
         super().set_detect_state()
 
     def hold_state(self):
@@ -79,7 +79,7 @@ class Submersive(Vehicle):
         if self.detection_time > 0:
             self.detect()
         else:
-            depletion_level = 0.5 * self.abs_max_velocity
+            depletion_level = INSPECTION_TIME * DRONE_MAX_VELOCITY
             self.fuel_level = max(0, self.fuel_level - depletion_level)
             self.target.inspected_turbine()
             self.target = None
