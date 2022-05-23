@@ -114,15 +114,13 @@ class Boat(Vehicle):
     def move_state(self):
         if self.target is not None and self.fuel_level > TIME_SCALAR:
             if type(self.target) is Windmill:
-                collision, distance_travelled = self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS)
-                self.distance_travelled += distance_travelled
+                collision, _ = self.move(self.target.pos[:2], BOAT_RADIUS + ROTOR_RADIUS)
                 if collision:
                     self.set_detect_state()
                 else:
                     self.update_fuel_time()
             else:
-                collision, distance_travelled = self.move(self.target, BOAT_RADIUS)
-                self.distance_travelled += distance_travelled
+                collision, _ = self.move(self.target, BOAT_RADIUS)
                 if collision:
                     self.set_detect_state()
                 else:
@@ -185,8 +183,7 @@ class Boat(Vehicle):
 
     def return_state(self):
         if self.fuel_level > TIME_SCALAR:
-            collision, distance_travelled = self.move(coastal_location, BOAT_RADIUS)
-            self.distance_travelled += distance_travelled
+            collision, _ = self.move(coastal_location, BOAT_RADIUS)
             if collision:
                 self.set_hold_state()
             else:

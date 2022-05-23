@@ -69,7 +69,6 @@ class Submersive(Vehicle):
         if self.target is not None and self.fuel_level >= self.abs_max_velocity:
             collision, distance_travelled = self.move(self.target.pos[:2], DRONE_RADIUS + ROTOR_RADIUS)
             self.fuel_level = max(0, self.fuel_level - distance_travelled)
-            self.distance_travelled += distance_travelled
             if collision:
                 self.set_detect_state()
 
@@ -91,7 +90,6 @@ class Submersive(Vehicle):
         if self.fuel_level >= self.abs_max_velocity:
             collision, distance_travelled = self.move(self.adv.pos[:2], DRONE_RADIUS + BOAT_RADIUS)
             self.fuel_level = max(0, self.fuel_level - distance_travelled)
-            self.distance_travelled += distance_travelled
             if collision:
                 self.adv.set_drone_returned(self)
                 self.set_hold_state()
