@@ -86,8 +86,8 @@ while running:
     # start from the coast at the start of the day
     if boat.state == VehicleStates.HOLDSTATE and current_time % NANOSECONDS_IN_DAY == 0:
         create_path(control, boat)
-
-    boat.step()
+    else:
+        boat.step()
     for drone in drones:
         drone.step()
 
