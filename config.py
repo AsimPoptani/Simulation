@@ -1,5 +1,7 @@
 import math
 
+SAVE_IMAGES = False
+
 WIDTH = 1024  # 1280
 HEIGHT = 768  # 1024
 HEIGHT_RATIO = 1
@@ -35,7 +37,6 @@ FG_COLOUR = (255, 255, 255)
 # hours
 TIME_SCALAR = 1 / 6
 
-# TODO fix these values
 # meters per tick
 DRONE_MAX_VELOCITY = 7 * 1000
 # hours
