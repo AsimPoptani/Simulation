@@ -3,6 +3,7 @@ import math
 QUICK_VIEW = False
 SAVE_IMAGES = False
 HIDEF = False
+IMAGE_DIR = 'images'
 
 WIDTH = 1920 if HIDEF else 1024
 HEIGHT = 1080 if HIDEF else 768

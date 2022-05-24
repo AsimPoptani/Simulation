@@ -3,7 +3,7 @@ from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
 from Vehicle import VehicleStates
 from config import WIDTH, HEIGHT, BOAT_N_DRONES, BOAT_MAX_FUEL, SIMULATION_TIME_FAULTS
-from config import TIME_SCALAR, BG_COLOUR, FG_COLOUR, SAVE_IMAGES, HIDEF, QUICK_VIEW
+from config import TIME_SCALAR, BG_COLOUR, FG_COLOUR, SAVE_IMAGES, HIDEF, QUICK_VIEW, IMAGE_DIR
 from locations import locations, coastal_location
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -17,6 +17,13 @@ from time_utilities import nanosecond_string, NANOSECONDS_IN_HOUR, NANOSECONDS_I
 pwd = os.getcwd()
 # Os join Opens a file and returns a file object.
 url = os.path.join(pwd, "./OpenSans-Regular.ttf")
+
+# make directory for saving images
+if SAVE_IMAGES:
+    try:
+        os.mkdir(IMAGE_DIR)
+    except FileExistsError:
+        pass
 
 current_time = 0
 text_width = 0
@@ -257,8 +264,10 @@ while running:
     pygame.display.flip()
 
     if SAVE_IMAGES:
-        pygame.image.save(screen, "images/" + str(current_time).zfill(24) + ".png")
-        if QUICK_VIEW and current_time >= 2 * NANOSECONDS_IN_DAY:
+        pygame.image.save(screen, IMAGE_DIR + "/" + str(current_time).zfill(24) + ".png")
+        if QUICK_VIEW and current_time > 0:
+            exit(0)
+        elif current_time >= 2 * NANOSECONDS_IN_DAY:
             exit(0)
 
     clock.tick(30)
