@@ -2,8 +2,8 @@
 from Boat import Boat, BoatSprite
 from ControlRoom import ControlRoom
 from Vehicle import VehicleStates
-from config import WIDTH, HEIGHT, BOAT_N_DRONES, BOAT_MAX_FUEL, SIMULATION_TIME_FAULTS, TIME_SCALAR, BG_COLOUR, \
-    FG_COLOUR, SAVE_IMAGES
+from config import WIDTH, HEIGHT, BOAT_N_DRONES, BOAT_MAX_FUEL, SIMULATION_TIME_FAULTS
+from config import TIME_SCALAR, BG_COLOUR, FG_COLOUR, SAVE_IMAGES, HIDEF, QUICK_VIEW
 from locations import locations, coastal_location
 from faults import FAULTS
 from colorsys import hsv_to_rgb
@@ -136,7 +136,7 @@ while running:
 
 
     ######## FAULT LEGEND ########
-    box_size = (int(WIDTH / 6), int(HEIGHT / 2.3))
+    box_size = (int(WIDTH / (10 if HIDEF else 6)), int(HEIGHT / 2.3))
     dot_pos = 0
     text = font.render("Faults", 1, FG_COLOUR)
     screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
@@ -258,6 +258,8 @@ while running:
 
     if SAVE_IMAGES:
         pygame.image.save(screen, "images/" + str(current_time).zfill(24) + ".png")
+        if QUICK_VIEW and current_time >= 2 * NANOSECONDS_IN_DAY:
+            exit(0)
 
     clock.tick(30)
 
