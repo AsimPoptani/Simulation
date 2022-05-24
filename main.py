@@ -142,8 +142,47 @@ while running:
             screen.blit(power, power_pos)
 
 
-    ######## FAULT LEGEND ########
+    ######## DATE & TIME ########
+    time_text = font.render(nanosecond_string(current_time), 1, FG_COLOUR)
+    # Step time
+    current_time += int(NANOSECONDS_IN_HOUR * TIME_SCALAR)
+    # Center text
+    text_width = max(text_width, time_text.get_width())
+    text_height = time_text.get_height()
+    screen.blit(time_text, (WIDTH - text_width - 5, 5))
+
+
+    ######## TURBINE LEGEND BOX SIZES ########
     box_size = (int(WIDTH / (10 if HIDEF else 6)), int(HEIGHT / 2.3))
+
+
+    ######## WINDMILL LEGEND ########
+    windmill_box = (200, 100)
+    windmill_box_surface = pygame.Surface(windmill_box)
+    windmill_box_surface.fill(BG_COLOUR)
+    text = font.render("Wind turbine states", 1, FG_COLOUR)
+    windmill_box_surface.blit(text, (5, 0), text.get_rect())
+    # unchecked turbine
+    turbine_sprite = pygame.image.load('./sprites/wind-turbine1.png')
+    windmill_box_surface.blit(turbine_sprite, (5, 34))
+    text = font.render("Not inspected", 1, FG_COLOUR)
+    windmill_box_surface.blit(text, (25, 30), text.get_rect())
+    # checked turbine
+    turbine_sprite = pygame.image.load('./sprites/inspected_wind-turbine1.png')
+    windmill_box_surface.blit(turbine_sprite, (5, 54))
+    text = font.render("Inspected", 1, FG_COLOUR)
+    windmill_box_surface.blit(text, (25, 50), text.get_rect())
+    # faulty turbine
+    turbine_sprite = pygame.image.load('./sprites/wind-turbine-fault.png')
+    windmill_box_surface.blit(turbine_sprite, (5, 74))
+    text = font.render("Fault", 1, FG_COLOUR)
+    windmill_box_surface.blit(text, (25, 70), text.get_rect())
+    # Blit wind turbine legend to screen
+    windmill_legend_x = WIDTH - (2 * box_size[0])
+    screen.blit(windmill_box_surface, (windmill_legend_x, HEIGHT - windmill_box[1]))
+
+
+    ######## FAULT LEGEND ########
     dot_pos = 0
     text = font.render("Faults", 1, FG_COLOUR)
     screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
@@ -194,7 +233,7 @@ while running:
 
     ######## DRONE LEGEND ########
     drone_box = (300, 100)
-    drone_box_surface = pygame.Surface(summary_box)
+    drone_box_surface = pygame.Surface(drone_box)
     drone_box_surface.fill(BG_COLOUR)
     text = font.render("Drone states", 1, FG_COLOUR)
     drone_box_surface.blit(text, (5, 0), text.get_rect())
@@ -213,8 +252,8 @@ while running:
     # holding drone
     drone_sprite = pygame.image.load('./sprites/subwhite.png')
     drone_box_surface.blit(drone_sprite, (5, 34))
-    moving_state_text = VehicleStates.HOLDSTATE.name + ' : ' + str(holding)
-    text = font.render(moving_state_text, 1, FG_COLOUR)
+    holding_state_text = VehicleStates.HOLDSTATE.name + ' : ' + str(holding)
+    text = font.render(holding_state_text, 1, FG_COLOUR)
     drone_box_surface.blit(text, (25, 30), text.get_rect())
     # moving drone
     drone_sprite = pygame.image.load('./sprites/subred.png')
@@ -225,11 +264,11 @@ while running:
     # detect drone
     drone_sprite = pygame.image.load('./sprites/subgreen.png')
     drone_box_surface.blit(drone_sprite, (5, 74))
-    moving_state_text = VehicleStates.DETECTSTATE.name + ' : ' + str(detecting)
-    text = font.render(moving_state_text, 1, FG_COLOUR)
+    detecting_state_text = VehicleStates.DETECTSTATE.name + ' : ' + str(detecting)
+    text = font.render(detecting_state_text, 1, FG_COLOUR)
     drone_box_surface.blit(text, (25, 70), text.get_rect())
     # Blit drone legend to screen
-    drone_legend_x = (2 * WIDTH) // 5
+    drone_legend_x = 1.5 * box_size[0] #(1 * WIDTH) // 4
     screen.blit(drone_box_surface, (drone_legend_x, HEIGHT - summary_box[1]))
 
 
@@ -252,13 +291,6 @@ while running:
     text = font.render("Direction : " + str(wind_direction) + u'\N{DEGREE SIGN}', 1, FG_COLOUR)
     screen.blit(text, (5, 40))
 
-    ######## DATE & TIME ########
-    text = font.render(nanosecond_string(current_time), 1, FG_COLOUR)
-    # Step time
-    current_time += int(NANOSECONDS_IN_HOUR * TIME_SCALAR)
-    # Center text
-    text_width = max(text_width, text.get_width())
-    screen.blit(text,(WIDTH - text_width - 5,5))
 
     # Update the display
     pygame.display.flip()
