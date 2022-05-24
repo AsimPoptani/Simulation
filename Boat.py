@@ -130,10 +130,13 @@ class Boat(Vehicle):
 
     def detect_state(self):
         max_distance = MAX_SCAN_DISTANCE
+
+        # if there isn't a work list, and no drones have been deployed, make a work list
         if self.drones_deployed == 0 and len(self.windmills) == 0:
             self.windmills = list(filter(lambda i: distance(*self.pos[:2], *i.pos[:2]) < max_distance, self.windfarm))
             self.windmills.sort(key=lambda i: distance(*self.pos[:2], *i.pos[:2]), reverse=False)
 
+        # if there are turbines still on the work list
         if len(self.windmills) > 0:
             drones_to_remove = []
 
@@ -142,43 +145,65 @@ class Boat(Vehicle):
                 targets = []
                 # running tally of distance this drone will travel
                 reach = drone.fuel_level / 2
+                # initial target is the ADV for sorting purposes
                 target = self
                 # limit the number of targets each drone can have
                 count = 0
+                # while there are turbines still on the work list, and the reach is still greater than the smallest step
                 while reach > drone.abs_max_velocity and len(self.windmills) > 0:
+                    # sort available targets by distance from the current one
                     self.windmills.sort(key=lambda i: distance(*target.pos[:2], *i.pos[:2]), reverse=False)
+                    # select the closest target to the current one
                     next_target = self.windmills[0]
+                    # the interval is the distance to that target from this one
                     interval = distance(*target.pos[:2], *next_target.pos[:2])
+                    # the stretch is that distance plus the amount the battery will be depleted by inspecting the target
                     stretch = interval + (INSPECTION_TIME * DRONE_MAX_VELOCITY)
+                    # if the difference between the reach and the stretch is greater than the smallest step
                     if reach - stretch > drone.abs_max_velocity:
+                        # subtract the stretch from the reach
                         reach -= stretch
+                        # remove the next target from the work list
                         self.windmills.remove(next_target)
                         self.windfarm.remove(next_target)
+                        # append it to this drones targets
                         targets.append(next_target)
+                        # and make the next target the current one for the next iteration
                         target = next_target
+                        # check that the number of targets assigned to this drone is below the allowed threshold
                         if count < DRONE_MAX_TARGETS:
                             count += 1
                         else:
+                            # if the threshold has been reached, break out of the while loop for this drone
                             break
                     else:
+                        # if the stretch exceeds the reach, break out of the while loop for this drone
                         break
 
+                # allocate the targets to the drone and deploy
                 if len(targets) > 0:
                     drone.set_targets(targets)
                     self.drones_deployed += 1
                     drones_to_remove.append(drone)
 
+            # remove the deployed drones from the queue
             for drone in drones_to_remove:
                 self.drones.remove(drone)
+            # update fuel consumed and time at sea
             self.update_fuel_time()
+            # check all drones are within communications range
             if not self.drones_in_communications_range():
                 print('Drones out of communications range !')
+        # else if no drones have been deployed
         elif len(self.drones) == BOAT_N_DRONES:
             self.drones_deployed = 0
             self.target = None
             self.next_target()
+        # else drones have been deployed, hold position
         else:
+            # update fuel consumed and time at sea
             self.update_fuel_time()
+            # check all drones are within communications range
             if not self.drones_in_communications_range():
                 print('Drones out of communications range !')
 
