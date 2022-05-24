@@ -1,12 +1,7 @@
 from math import sin, cos
 
 from config import N_WINDMILLS_X, N_WINDMILLS_Y, MAX_AREA_X, MAX_AREA_Y, DISTANCE_FROM_SHORE, DIRECTION_OF_WINDFARM
-from config import WINDFARM_WIDTH, WINDFARM_HEIGHT
-from config import HIDEF
-
-# the windfarm bottom left corner is the distance from the control centre / coast
-start_x = (7 if HIDEF else 6) * 1000
-start_y = 3 * 1000
+from config import WINDFARM_WIDTH, WINDFARM_HEIGHT, START_X, START_Y
 
 # the horizontal and vertical distances between windmills
 x_space = WINDFARM_WIDTH // N_WINDMILLS_X
@@ -52,8 +47,8 @@ for j in range(N_WINDMILLS_Y):
         elif j == 12 and i > 3:
             break
 
-        x = start_x + i * x_space
-        y = start_y + j * y_space
+        x = START_X + i * x_space
+        y = START_Y + j * y_space
         places.append((x, y))
 
         if x < min_x:

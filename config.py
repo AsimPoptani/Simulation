@@ -1,23 +1,31 @@
 import math
 
+# simulation options
 QUICK_VIEW = False
 SAVE_IMAGES = False
 HIDEF = False
 IMAGE_DIR = 'images'
 
+# display dimensions
 WIDTH = 1920 if HIDEF else 1024
 HEIGHT = 1080 if HIDEF else 768
 HEIGHT_RATIO = 1
 WIDTH_RATIO = HEIGHT / WIDTH
 
+# number of wind turbines and layout
 N_WINDMILLS = 175
 N_WINDMILLS_X = 22
 N_WINDMILLS_Y = 13
 
+# physical dimensions of the simulation in meters
 MIN_AREA_X = 0
 MIN_AREA_Y = 0
 MAX_AREA_X = (26 if HIDEF else 32) * 1000
 MAX_AREA_Y = (26 if HIDEF else 32) * 1000
+# top left corner of the wind farm
+START_X = (7 if HIDEF else 6) * 1000
+START_Y = 3 * 1000
+# miscellaneous wind farm details
 COASTAL_LOCATION = (0, 35 * 1000)
 DISTANCE_FROM_SHORE = 120 * 1000
 DISTANCE_BETWEEN_TURBINES = math.sqrt((407 * pow(1000, 2)) / N_WINDMILLS)
