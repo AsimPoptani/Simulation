@@ -186,7 +186,7 @@ while running:
     ######## FAULT LEGEND ########
     dot_pos = 0
     text = font.render("Faults", 1, FG_COLOUR)
-    screen.blit(text, (WIDTH - box_size[0]/2 - text.get_width(), HEIGHT - box_size[1] + 5))
+    screen.blit(text, (WIDTH - box_size[0] + 35, HEIGHT - box_size[1] + 5))
     for fault in FAULTS:
         hue_diff = 0.9 / len(FAULTS)
         hue = fault["id"] * hue_diff
