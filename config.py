@@ -46,7 +46,7 @@ BG_COLOUR = (0, 105, 148)
 FG_COLOUR = (255, 255, 255)
 
 # hours
-TIME_SCALAR = 1 / 6
+TIME_SCALAR = 1 / 60
 
 # meters per tick
 DRONE_MAX_VELOCITY = 7 * 1000
