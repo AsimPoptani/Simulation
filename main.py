@@ -75,7 +75,7 @@ control = ControlRoom(boat, windfarms)
 
 
 pygame.init()
-font=pygame.font.Font(url, 15)
+font = pygame.font.Font(url, 15)
 
 # Set up the drawing window
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -143,13 +143,14 @@ while running:
 
 
     ######## DATE & TIME ########
-    time_text = font.render(nanosecond_string(current_time), 1, FG_COLOUR)
+    time_font = pygame.font.Font(url, 30)
+    time_text = time_font.render(nanosecond_string(current_time), 1, FG_COLOUR)
     # Step time
     current_time += int(NANOSECONDS_IN_HOUR * TIME_SCALAR)
     # Center text
     text_width = max(text_width, time_text.get_width())
     text_height = time_text.get_height()
-    screen.blit(time_text, (WIDTH - text_width - 5, 5))
+    screen.blit(time_text, ((WIDTH // 2) - (text_width / 2), 5))
 
 
     ######## TURBINE LEGEND BOX SIZES ########
