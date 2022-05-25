@@ -219,16 +219,18 @@ class Boat(Vehicle):
 
     def drones_in_communications_range(self) -> bool:
         all_in_range = True
+        one_in_range_of_boat = False
         not_holding = list(filter(lambda i: i.state != VehicleStates.HOLDSTATE, self.auvs))
         for drone in not_holding:
             in_range_of_boat = distance(*drone.pos[:2], *self.pos[:2]) < DRONE_MAX_COMMUNICATION_RANGE
+            one_in_range_of_boat |= in_range_of_boat
             if not in_range_of_boat:
                 in_range = list(filter(lambda other: distance(*drone.pos[:2], *other.pos[:2]) < DRONE_MAX_COMMUNICATION_RANGE, not_holding))
                 in_range.remove(drone)
                 if len(in_range) == 0:
                     all_in_range = False
                     break
-        return all_in_range
+        return all_in_range and one_in_range_of_boat
 
     def __str__(self) -> str:
         return f"Boat: {self.name} \n {self.pos} with state {self.state}"
