@@ -2,7 +2,7 @@ absl-py==1.0.0
 numpy==1.22.2
 ortools==9.3.10497
 pip-autoremove==0.10.0
-protobuf==3.20.1
+protobuf==3.20.2
 pygame==2.1.2
 PyYAML==6.0
 six==1.16.0
